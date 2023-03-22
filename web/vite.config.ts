@@ -30,9 +30,10 @@ export default defineConfig({
   },
   test: {
     global: true,
-    setupFiles: 'src/test/unit/helpers/setupTests.ts',
+    setupFiles: 'test/unit/helpers/setupTests.ts',
     coverage: {
       reporter: ["text", "json", "html"],
+      all:true
     },
     environment: "happy-dom",
     cache: false,
