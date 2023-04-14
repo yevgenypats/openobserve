@@ -81,6 +81,7 @@ impl Sql {
         if statement.is_empty() {
             return Err(anyhow::anyhow!("sql is empty"));
         }
+        println!("statement: {:?}", statement.len());
         let statement = &statement[0];
         let sql: Result<Sql, anyhow::Error> = statement.try_into();
         if sql.is_err() {

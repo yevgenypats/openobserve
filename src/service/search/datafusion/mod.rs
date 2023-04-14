@@ -15,6 +15,7 @@
 use crate::meta::functions::ZoFunction;
 
 pub mod exec;
+pub mod exec_ballista;
 mod match_udf;
 mod regexp_udf;
 pub mod storage;
