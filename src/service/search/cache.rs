@@ -94,7 +94,28 @@ pub async fn search(
         id: session_id.to_string(),
         data_type: SessionType::Cache,
     };
+
+    #[cfg(not(feature = "ballista_query"))]
     let result = match super::datafusion::exec::sql(
+        &session,
+        stream_type,
+        Some(schema),
+        HashMap::new(),
+        &sql,
+        &files,
+        FileType::JSON,
+    )
+    .await
+    {
+        Ok(res) => res,
+        Err(err) => {
+            log::error!("datafusion execute error: {}", err);
+            return Err(super::handle_datafusion_error(err));
+        }
+    };
+
+    #[cfg(feature = "ballista_query")]
+    let result = match super::datafusion::exec_ballista::sql(
         &session,
         stream_type,
         Some(schema),

@@ -48,6 +48,7 @@ use crate::service::search::sql::Sql;
 
 const AGGREGATE_UDF_LIST: [&str; 6] = ["min", "max", "count", "avg", "sum", "array_agg"];
 
+#[cfg(feature = "ballista_query")]
 #[tracing::instrument(name = "service:search:datafusion:ballista_exec:sql", skip_all)]
 pub async fn sql(
     session: &meta::search::Session,
@@ -150,8 +151,6 @@ pub async fn sql(
         .unwrap();
 
     let table = ListingTable::try_new(config)?;
-
-    // ctx.register_table("tbl", Arc::new(table))?;
 
     ballista_ctx.register_table("tbl", Arc::new(table))?;
 

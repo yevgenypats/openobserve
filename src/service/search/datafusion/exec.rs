@@ -47,6 +47,7 @@ use crate::service::search::sql::Sql;
 
 const AGGREGATE_UDF_LIST: [&str; 6] = ["min", "max", "count", "avg", "sum", "array_agg"];
 
+#[cfg(not(feature = "ballista_query"))]
 #[tracing::instrument(name = "service:search:datafusion:exec:sql", skip_all)]
 pub async fn sql(
     session: &meta::search::Session,

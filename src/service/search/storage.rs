@@ -190,7 +190,20 @@ pub async fn search(
         }
         let task = tokio::task::spawn(
             async move {
-                super::datafusion::exec::sql(
+                #[cfg(not(feature = "ballista_query"))]
+                return super::datafusion::exec::sql(
+                    &session,
+                    stream_type,
+                    Some(schema),
+                    diff_fields,
+                    &sql,
+                    &files,
+                    FileType::PARQUET,
+                )
+                .await;
+
+                #[cfg(feature = "ballista_query")]
+                super::datafusion::exec_ballista::sql(
                     &session,
                     stream_type,
                     Some(schema),
