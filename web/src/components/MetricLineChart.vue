@@ -14,12 +14,11 @@
 -->
 
 <template>
-  <div ref="plotref" id="plotly_chart" />
+  <div ref="plotref" id="metrics_explorer_chart" />
 </template>
 
 <script lang="ts">
 import Plotly from "plotly.js";
-import { cloneDeep } from "lodash-es";
 
 import { defineComponent, onMounted, onUpdated, ref } from "vue";
 
@@ -163,7 +162,7 @@ export default defineComponent({
         "xaxis.autorange": true,
         "yaxis.autorange": true,
       };
-      if (document.getElementById("plotly_chart") != null) {
+      if (document.getElementById("metrics_explorer_chart") != null) {
         Plotly.relayout(plotref.value, update);
       }
     });
@@ -171,8 +170,8 @@ export default defineComponent({
     const reDraw = (chart: any) => {
       traces = [...chart.data];
       layout.title.text = chart.layout.title;
-      if (document.getElementById("plotly_chart") != null) {
-        Plotly.react("plotly_chart", traces, layout);
+      if (document.getElementById("metrics_explorer_chart") != null) {
+        Plotly.react("metrics_explorer_chart", traces, layout);
       }
     };
 
@@ -183,7 +182,7 @@ export default defineComponent({
         "xaxis.autorange": true,
         "yaxis.autorange": true,
       };
-      if (document.getElementById("plotly_chart") != null) {
+      if (document.getElementById("metrics_explorer_chart") != null) {
         Plotly.relayout(plotref.value, update);
       }
     };
