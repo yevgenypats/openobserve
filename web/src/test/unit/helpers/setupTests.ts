@@ -14,6 +14,14 @@ import home from "../mockData/home";
 
 import.meta.env.VITE_ZINCOBSERVE_ENDPOINT = "http://localhost:8080";
 
+vi.mock('rudder-sdk-js', () => { 
+  return {
+      ready: vi.fn(),
+      load: vi.fn(),
+      track: vi.fn(),                 
+  }
+});
+
 // TODO OK: Move below rest handlers to separate file
 export const restHandlers = [
   rest.get(
@@ -133,6 +141,11 @@ export const restHandlers = [
       })
     );
   }),
+
+   //set add dashboard mock implementation
+  rest.get(`${store.state.API_ENDPOINT}/dummy`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({code: 200, message: 'Dashboard saved'}));
+  })
 ];
 const server = setupServer(...restHandlers);
 

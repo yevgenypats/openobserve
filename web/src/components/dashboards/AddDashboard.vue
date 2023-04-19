@@ -21,7 +21,7 @@
           <div v-if="beingUpdated" class="text-body1 text-bold text-dark">
             {{ t("dashboard.updatedashboard") }}
           </div>
-          <div v-else class="text-body1 text-bold text-dark">
+          <div v-else class="text-body1 text-bold text-dark" data-test="create-dash">
             {{ t("dashboard.createdashboard") }}
           </div>
         </div>
@@ -56,6 +56,7 @@
           filled
           dense
           :rules="[(val) => !!val || t('dashboard.nameRequired')]"
+          data-test="dash-name"
         />
         <span>&nbsp;</span>
         <q-input
@@ -68,6 +69,7 @@
           outlined
           filled
           dense
+          data-test="dash-description"
         />
 
         <div class="flex justify-center q-mt-lg">
@@ -88,6 +90,7 @@
             padding="sm xl"
             type="submit"
             no-caps
+            data-test="add-dash"
           />
         </div>
       </q-form>
@@ -168,7 +171,7 @@ export default defineComponent({
         message: `${rejectedEntries.length} file(s) did not pass validation constraints`,
       });
     },
-    onSubmit() {
+    async onSubmit() {
       const dismiss = this.$q.notify({
         spinner: true,
         message: "Please wait...",
@@ -203,7 +206,7 @@ export default defineComponent({
             baseObj
           );
         }
-        callDashboard
+       return callDashboard
           .then((res: { data: any }) => {
             const data = res.data;
             this.dashboardData = {

@@ -17,7 +17,7 @@
           Import Dashboard from exported JSON file
         </div>
         <div style="width: 400px; height: 100px;">
-          <q-file filled bottom-slots v-model="jsonFile" label="Drop your file here" accept=".json">
+          <q-file data-test="import-file" filled bottom-slots v-model="jsonFile" label="Drop your file here" accept=".json">
             <template v-slot:prepend>
               <q-icon name="cloud_upload" @click.stop.prevent />
             </template>
@@ -43,6 +43,7 @@
             @click="goBack()"
           />
           <q-btn
+            data-test="import-btn"
             :disable="!jsonFile"
             :label="t('dashboard.import')"
             class="q-mb-md text-bold no-border q-ml-md"
