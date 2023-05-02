@@ -665,9 +665,6 @@ export default defineComponent({
     };
   },
   computed: {
-    showQuery() {
-      return this.searchObj.meta.showQuery;
-    },
     changeOrganization() {
       return this.store.state.selectedOrganization.identifier;
     },

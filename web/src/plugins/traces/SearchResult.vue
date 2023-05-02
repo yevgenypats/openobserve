@@ -22,7 +22,6 @@
         data-test="logs-search-result-bar-chart"
         ref="plotChart"
         id="traces_scatter_chart"
-        v-show="searchObj.meta.showHistogram"
         :chart="searchObj.data.histogram"
       />
 
@@ -49,21 +48,7 @@
                 class="table-header"
                 :data-test="`log-search-result-table-th-${col.label}`"
               >
-                <q-chip
-                  v-if="col.closable"
-                  :data-test="`logs-search-result-table-th-remove-${col.label}-btn`"
-                  :icon-remove="
-                    'img:' + getImageURL('images/common/close_icon.svg')
-                  "
-                  class="q-ma-none table-head-chip"
-                  removable
-                  square
-                  @remove="closeColumn(col)"
-                >
-                  {{ col.label }}
-                </q-chip>
-
-                <span v-else class="table-head-label">
+                <span class="table-head-label">
                   {{ col.label }}
                 </span>
               </th>
@@ -79,12 +64,6 @@
             :key="'expand_' + index"
             @click="expandRowDetail(row, index)"
             style="cursor: pointer"
-            :style="
-              row[store.state.zoConfig.timestamp_column] ==
-              searchObj.data.searchAround.indexTimestamp
-                ? 'background-color:lightgray'
-                : ''
-            "
           >
             <q-td
               v-for="column in searchObj.data.resultGrid.columns"
@@ -184,19 +163,6 @@ export default defineComponent({
     "get:traceDetails",
   ],
   methods: {
-    closeColumn(col: any) {
-      const RGIndex = this.searchObj.data.resultGrid.columns.indexOf(col.name);
-      this.searchObj.data.resultGrid.columns.splice(RGIndex, 1);
-
-      const SFIndex = this.searchObj.data.stream.selectedFields.indexOf(
-        col.name
-      );
-
-      this.searchObj.data.stream.selectedFields.splice(SFIndex, 1);
-      this.searchObj.organizationIdetifier =
-        this.store.state.selectedOrganization.identifier;
-      this.updatedLocalLogFilterField();
-    },
     onChartUpdate({ start, end }: { start: any; end: any }) {
       this.searchObj.meta.showDetailTab = false;
       this.searchObj.runQuery = true;
@@ -231,11 +197,6 @@ export default defineComponent({
         this.searchObj.data.resultGrid.currentPage += 1;
         this.$emit("update:scroll");
       }
-    },
-    onTimeBoxed(obj: any) {
-      this.searchObj.meta.showDetailTab = false;
-      this.searchObj.data.searchAround.indexTimestamp = obj.key;
-      this.$emit("search:timeboxed", obj);
     },
   },
   setup(props, { emit }) {

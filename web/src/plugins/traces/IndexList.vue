@@ -18,7 +18,6 @@
     <div class="index-table q-mt-xs">
       <q-table
         data-test="log-search-index-list-fields-table"
-        v-model="searchObj.data.stream.selectedFields"
         :visible-columns="['name']"
         :rows="searchObj.data.stream.selectedStreamFields"
         row-key="name"
@@ -33,15 +32,7 @@
       >
         <template #body-cell-name="props">
           <q-tr :props="props">
-            <q-td
-              :props="props"
-              class="field_list"
-              :class="
-                searchObj.data.stream.selectedFields.includes(props.row.name)
-                  ? 'selected'
-                  : ''
-              "
-            >
+            <q-td :props="props" class="field_list">
               <!-- TODO OK : Repeated code make seperate component to display field  -->
               <div
                 v-if="props.row.ftsKey || !props.row.showValues"
@@ -259,20 +250,6 @@ export default defineComponent({
       searchObj.data.stream.addToFilter = field;
     };
 
-    function clickFieldFn(row: { name: never }, pageIndex: number) {
-      if (searchObj.data.stream.selectedFields.includes(row.name)) {
-        searchObj.data.stream.selectedFields =
-          searchObj.data.stream.selectedFields.filter(
-            (v: any) => v !== row.name
-          );
-      } else {
-        searchObj.data.stream.selectedFields.push(row.name);
-      }
-      searchObj.organizationIdetifier =
-        store.state.selectedOrganization.identifier;
-      updatedLocalLogFilterField();
-    }
-
     const openFilterCreator = (event: any, { name, ftsKey }: any) => {
       if (ftsKey) {
         event.stopPropagation();
@@ -347,7 +324,6 @@ export default defineComponent({
       streamOptions,
       filterFieldFn,
       addToFilter,
-      clickFieldFn,
       getImageURL,
       filterStreamFn,
       openFilterCreator,

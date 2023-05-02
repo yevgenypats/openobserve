@@ -55,7 +55,7 @@
         </div>
       </div>
     </div>
-    <div class="row" v-if="searchObj.meta.showQuery">
+    <div class="row">
       <div class="col">
         <query-editor
           ref="queryEditorRef"

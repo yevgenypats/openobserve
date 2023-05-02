@@ -37,7 +37,7 @@
           :limits="searchObj.config.splitterLimit"
           style="width: 100%"
         >
-          <template #before v-if="searchObj.meta.showFields">
+          <template #before>
             <index-list
               data-test="logs-search-index-list"
               :key="searchObj.data.stream.streamLists"
@@ -121,7 +121,6 @@
                 ref="searchResultRef"
                 @update:datetime="searchData"
                 @update:scroll="getMoreData"
-                @search:timeboxed="searchAroundData"
                 @get:traceDetails="getTraceDetails"
               />
             </div>
@@ -201,11 +200,7 @@ export default defineComponent({
           user_org: this.store.state.selectedOrganization.identifier,
           user_id: this.store.state.userInfo.email,
           stream_name: this.searchObj.data.stream.selectedStream.value,
-          show_query: this.searchObj.meta.showQuery,
-          show_histogram: this.searchObj.meta.showHistogram,
-          sqlMode: this.searchObj.meta.sqlMode,
-          showFields: this.searchObj.meta.showFields,
-          page: "Search Logs",
+          page: "Search Traces",
         });
       }
     },
@@ -693,27 +688,14 @@ export default defineComponent({
         if (searchObj.data.stream.selectedStream.value == "") {
           return false;
         }
-
-        searchObj.data.searchAround.indexTimestamp = 0;
-        searchObj.data.searchAround.size = 0;
-        if (searchObj.data.searchAround.histogramHide) {
-          searchObj.data.searchAround.histogramHide = false;
-          searchObj.meta.showHistogram = true;
-        }
-
         searchObj.data.errorMsg = "";
         if (searchObj.data.resultGrid.currentPage == 0) {
-          // searchObj.data.stream.selectedFields = [];
-          // searchObj.data.stream.addToFilter = "";
           searchObj.data.queryResults = {};
-          // searchObj.data.resultGrid.columns = [];
           searchObj.data.sortedQueryResults = [];
-          // searchObj.data.streamResults = [];
           searchObj.data.histogram = {
             layout: {},
             data: [],
           };
-          // searchObj.data.editorValue = "";
         }
         dismiss = Notify();
 
@@ -867,10 +849,6 @@ export default defineComponent({
       try {
         searchObj.data.resultGrid.columns = [];
 
-        searchObj.data.stream.selectedFields = [];
-
-        searchObj.meta.resultGrid.manualRemoveFields = false;
-
         searchObj.data.resultGrid.columns.push({
           name: "@timestamp",
           field: (row: any) =>
@@ -1008,10 +986,7 @@ export default defineComponent({
         layout: layout,
       };
 
-      if (
-        searchObj.meta.showHistogram == true &&
-        searchResultRef.value?.reDrawChart
-      ) {
+      if (searchResultRef.value?.reDrawChart) {
         searchResultRef.value.reDrawChart();
       }
     }
@@ -1025,16 +1000,6 @@ export default defineComponent({
 
       //get stream list
       getStreamList();
-    }
-
-    function refreshStreamData() {
-      // searchObj.loading = true;
-      // this.searchObj.data.resultGrid.currentPage = 0;
-      // resetSearchObj();
-      // searchObj.organizationIdetifier =
-      //   store.state.selectedOrganization.identifier;
-      // //get stream list
-      // getStreamList();
     }
 
     onMounted(() => {
@@ -1055,10 +1020,7 @@ export default defineComponent({
         loadPageData();
       }
 
-      if (
-        searchObj.meta.showHistogram == true &&
-        router.currentRoute.value.path.indexOf("/traces") > -1
-      ) {
+      if (router.currentRoute.value.path.indexOf("/traces") > -1) {
         setTimeout(() => {
           if (searchResultRef.value) searchResultRef.value.reDrawChart();
         }, 1500);
@@ -1102,86 +1064,6 @@ export default defineComponent({
       }
     };
 
-    const searchAroundData = (obj: any) => {
-      try {
-        dismiss = Notify();
-        searchObj.data.errorCode = 0;
-        searchService
-          .search_around({
-            org_identifier: searchObj.organizationIdetifier,
-            index: searchObj.data.stream.selectedStream.value,
-            key: obj.key,
-            size: obj.size,
-          })
-          .then((res) => {
-            searchObj.loading = false;
-            if (res.data.from > 0) {
-              searchObj.data.queryResults.from = res.data.from;
-              searchObj.data.queryResults.scan_size += res.data.scan_size;
-              searchObj.data.queryResults.took += res.data.took;
-              searchObj.data.queryResults.hits.push(...res.data.hits);
-            } else {
-              searchObj.data.queryResults = res.data;
-            }
-            //extract fields from query response
-            extractFields();
-            generateHistogramData();
-            //update grid columns
-            updateGridColumns();
-
-            if (searchObj.meta.showHistogram) {
-              searchObj.meta.showHistogram = false;
-              searchObj.data.searchAround.histogramHide = true;
-            }
-            segment.track("Button Click", {
-              button: "Search Around Data",
-              user_org: store.state.selectedOrganization.identifier,
-              user_id: store.state.userInfo.email,
-              stream_name: searchObj.data.stream.selectedStream.value,
-              show_timestamp: obj.key,
-              show_size: obj.size,
-              show_histogram: searchObj.meta.showHistogram,
-              sqlMode: searchObj.meta.sqlMode,
-              showFields: searchObj.meta.showFields,
-              page: "Search Logs - Search around data",
-            });
-
-            const visibleIndex =
-              obj.size > 30 ? obj.size / 2 - 12 : obj.size / 2;
-            setTimeout(() => {
-              searchResultRef.value.searchTableRef.scrollTo(
-                visibleIndex,
-                "start-force"
-              );
-            }, 500);
-
-            dismiss();
-          })
-          .catch((err) => {
-            searchObj.loading = false;
-            dismiss();
-            if (err.response != undefined) {
-              searchObj.data.errorMsg = err.response.data.error;
-            } else {
-              searchObj.data.errorMsg = err.message;
-            }
-
-            const customMessage = logsErrorMessage(err.response.data.code);
-            searchObj.data.errorCode = err.response.data.code;
-            if (customMessage != "") {
-              searchObj.data.errorMsg = t(customMessage);
-            }
-
-            // $q.notify({
-            //   message: searchObj.data.errorMsg,
-            //   color: "negative",
-            // });
-          });
-      } catch (e) {
-        throw new ErrorException("Request failed.");
-      }
-    };
-
     return {
       store,
       router,
@@ -1191,26 +1073,15 @@ export default defineComponent({
       loadPageData,
       getQueryData,
       searchResultRef,
-      refreshStreamData,
       updateGridColumns,
       getConsumableDateTime,
       runQueryFn,
       setQuery,
       useLocalLogsObj,
-      searchAroundData,
       getTraceDetails,
     };
   },
   computed: {
-    showFields() {
-      return this.searchObj.meta.showFields;
-    },
-    showHistogram() {
-      return this.searchObj.meta.showHistogram;
-    },
-    showQuery() {
-      return this.searchObj.meta.showQuery;
-    },
     moveSplitter() {
       return this.searchObj.config.splitterModel;
     },
@@ -1226,9 +1097,6 @@ export default defineComponent({
         this.searchObj.data.datetime.relative.period.value
       );
     },
-    updateSelectedColumns() {
-      return this.searchObj.data.stream.selectedFields.length;
-    },
     runQuery() {
       return this.searchObj.runQuery;
     },
@@ -1237,40 +1105,6 @@ export default defineComponent({
     },
   },
   watch: {
-    showFields() {
-      if (
-        this.searchObj.meta.showHistogram == true &&
-        this.searchObj.meta.sqlMode == false
-      ) {
-        setTimeout(() => {
-          if (this.searchResultRef) this.searchResultRef.reDrawChart();
-        }, 100);
-      }
-      if (this.searchObj.config.splitterModel > 0) {
-        this.searchObj.config.lastSplitterPosition =
-          this.searchObj.config.splitterModel;
-      }
-
-      this.searchObj.config.splitterModel = this.searchObj.meta.showFields
-        ? this.searchObj.config.lastSplitterPosition
-        : 0;
-    },
-    showHistogram() {
-      if (
-        this.searchObj.meta.showHistogram == true &&
-        this.searchObj.meta.sqlMode == false
-      ) {
-        setTimeout(() => {
-          if (this.searchResultRef) this.searchResultRef.reDrawChart();
-        }, 100);
-      }
-    },
-    moveSplitter() {
-      if (this.searchObj.meta.showFields == false) {
-        this.searchObj.meta.showFields =
-          this.searchObj.config.splitterModel > 0;
-      }
-    },
     changeOrganization() {
       if (this.router.currentRoute.value.name == "logs") {
         this.searchObj.data.query = "";
@@ -1290,12 +1124,6 @@ export default defineComponent({
       if (this.searchObj.data.datetime.tab == "relative") {
         this.runQueryFn();
       }
-    },
-    updateSelectedColumns() {
-      this.searchObj.meta.resultGrid.manualRemoveFields = true;
-      setTimeout(() => {
-        this.updateGridColumns();
-      }, 300);
     },
     runQuery() {
       if (this.searchObj.runQuery == true) {
