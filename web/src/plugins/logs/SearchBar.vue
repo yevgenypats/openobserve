@@ -191,6 +191,36 @@
         </div>
       </div>
     </div>
+    <div class="row" v-show="searchObj.meta.showQuery">
+      <div class="col" style="border-top: 1px solid #dbdbdb; height: 100%">
+        <q-splitter
+          no-scroll
+          v-model="searchObj.config.fnSplitterModel"
+          :limits="searchObj.config.fnSplitterLimit"
+          style="width: 100%; height: 100%"
+        >
+          <template #before>
+            <b>Query Editor:</b>
+            <query-editor
+              ref="queryEditorRef"
+              class="monaco-editor"
+              v-model:query="searchObj.data.query"
+              v-model:fields="searchObj.data.stream.selectedStreamFields"
+              v-model:functions="searchObj.data.stream.functions"
+              @update-query="updateQueryValue"
+              @run-query="searchData"
+            ></query-editor>
+          </template>
+          <template #after>
+            <div v-show="searchObj.meta.toggleFunction" style="height: 100%">
+              <b>VRL Function Editor:</b>
+              <div ref="fnEditorRef" id="fnEditor" style="height: 100%"></div>
+            </div>
+          </template>
+        </q-splitter>
+      </div>
+    </div>
+
     <q-dialog ref="confirmDialog" v-model="confirmDialogVisible">
       <q-card>
         <q-card-section>
@@ -198,8 +228,10 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn label="Cancel" color="primary" @click="cancelConfirmDialog" />
-          <q-btn label="OK" color="positive" @click="confirmDialogOK" />
+          <q-btn label="Cancel"
+color="primary" @click="cancelConfirmDialog" />
+          <q-btn label="OK"
+color="positive" @click="confirmDialogOK" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -216,6 +248,7 @@ import { useQuasar } from "quasar";
 
 import DateTime from "@/components/DateTime.vue";
 import useLogs from "@/composables/useLogs";
+import QueryEditor from "./QueryEditor.vue";
 import SyntaxGuide from "./SyntaxGuide.vue";
 import jsTransformService from "@/services/jstransform";
 
@@ -224,6 +257,7 @@ import segment from "@/services/segment_analytics";
 import config from "@/aws-exports";
 
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+import search from "../../services/search";
 
 const defaultValue: any = () => {
   return {
@@ -238,6 +272,7 @@ export default defineComponent({
   name: "ComponentSearchSearchBar",
   components: {
     DateTime,
+    QueryEditor,
     SyntaxGuide,
   },
   emits: ["searchdata"],
@@ -754,8 +789,8 @@ export default defineComponent({
 }
 
 .search-bar-component > .row:nth-child(2) {
-  height: calc(100% - 38px); /* or any other height you want to set */
-}
+    height: calc(100% - 38px); /* or any other height you want to set */
+  }
 
 .search-bar-component {
   padding-bottom: 1px;
