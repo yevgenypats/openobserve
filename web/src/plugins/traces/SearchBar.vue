@@ -18,7 +18,7 @@
     <div class="row q-my-xs">
       <div class="float-right col">
         <syntax-guide
-          data-test="logs-search-bar-sql-mode-toggle-btn"
+          data-test="traces-search-bar-syntax-guide-btn"
           :sqlmode="searchObj.meta.sqlMode"
         ></syntax-guide>
       </div>
@@ -34,13 +34,13 @@
         ></q-btn>
         <div class="float-left">
           <date-time
-            data-test="logs-search-bar-date-time-dropdown"
+            data-test="traces-search-bar-date-time-dropdown"
             @date-change="updateDateTime"
           />
         </div>
         <div class="search-time q-pl-sm float-left">
           <q-btn
-            data-test="logs-search-bar-refresh-btn"
+            data-test="traces-search-bar-refresh-btn"
             data-cy="search-bar-refresh-button"
             dense
             flat

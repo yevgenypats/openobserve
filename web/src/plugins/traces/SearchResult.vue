@@ -19,7 +19,7 @@
   <div class="col column oveflow-hidden">
     <div class="search-list" style="width: 100%">
       <trace-chart
-        data-test="logs-search-result-bar-chart"
+        data-test="traces-search-result-scatter-chart"
         ref="plotChart"
         id="traces_scatter_chart"
         :chart="searchObj.data.histogram"

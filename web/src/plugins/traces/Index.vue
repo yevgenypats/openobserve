@@ -19,13 +19,14 @@
   <q-page class="tracePage" id="tracePage">
     <div id="tracesSecondLevel">
       <search-bar
-        data-test="logs-search-bar"
+        data-test="traces-search-bar"
         ref="searchBarRef"
         v-show="searchObj.data.stream.streamLists.length > 0"
         :key="searchObj.data.stream.streamLists.length"
         @searchdata="searchData"
       />
       <div
+        data-test="traces-result-container"
         id="tracesThirdLevel"
         class="row scroll traces-search-result-container"
         style="width: 100%"
@@ -39,7 +40,7 @@
         >
           <template #before>
             <index-list
-              data-test="logs-search-index-list"
+              data-test="traces-search-index-list"
               :key="searchObj.data.stream.streamLists"
             />
           </template>
@@ -66,11 +67,11 @@
                   Result not found.
                 </div>
                 <div
-                  data-test="logs-search-error-message"
+                  data-test="traces-search-error-message"
                   v-html="searchObj.data.errorMsg"
                 ></div>
                 <div
-                  data-test="logs-search-error-20003"
+                  data-test="traces-search-error-20003"
                   v-if="parseInt(searchObj.data.errorCode) == 20003"
                 >
                   <q-btn
@@ -111,7 +112,7 @@
               <h5 class="text-center">No result found.</h5>
             </div>
             <div
-              data-test="logs-search-search-result"
+              data-test="traces-search-result"
               v-show="
                 searchObj.data.queryResults.hasOwnProperty('total') &&
                 !!searchObj.data.queryResults.hits.length
@@ -135,7 +136,7 @@
         />
       </div>
       <div v-else>
-        <h5 data-test="logs-search-error-message" class="text-center">
+        <h5 data-test="traces-search-error-message" class="text-center">
           <q-icon name="warning" color="warning" size="10rem" /><br />{{
             searchObj.data.errorMsg
           }}
