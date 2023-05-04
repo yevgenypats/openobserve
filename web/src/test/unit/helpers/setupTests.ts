@@ -6,6 +6,7 @@ import streams from "@/test/unit/mockData/streams";
 import users from "../mockData/users";
 import alerts from "../mockData/alerts";
 import logs from "../mockData/logs";
+import traces from "../mockData/traces";
 import organizations from "../mockData/organizations";
 import "whatwg-fetch";
 import store from "./store";
@@ -26,7 +27,11 @@ export const restHandlers = [
   rest.get(
     `${store.state.API_ENDPOINT}/api/${store.state.selectedOrganization.identifier}/streams`,
     (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(streams.stream_list));
+      let resData;
+      if (req.url.searchParams.get("type") === "traces")
+        resData = traces.stream_list;
+      else resData = streams.stream_list;
+      return res(ctx.status(200), ctx.json(resData));
     }
   ),
 
@@ -75,7 +80,11 @@ export const restHandlers = [
   rest.post(
     `${store.state.API_ENDPOINT}/api/${store.state.selectedOrganization.identifier}/_search`,
     (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(logs.search));
+      let resData;
+      if (req.url.searchParams.get("type") === "traces")
+        resData = traces.get_traces;
+      else resData = logs.search;
+      return res(ctx.status(200), ctx.json(resData));
     }
   ),
 

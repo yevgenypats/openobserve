@@ -17,7 +17,7 @@
   <div class="column index-menu">
     <div class="index-table q-mt-xs">
       <q-table
-        data-test="log-search-index-list-fields-table"
+        data-test="trace-search-index-list-fields-table"
         :visible-columns="['name']"
         :rows="searchObj.data.stream.selectedStreamFields"
         row-key="name"
@@ -45,7 +45,7 @@
                 <div class="field_overlay">
                   <q-icon
                     :name="'img:' + getImageURL('images/common/add_icon.svg')"
-                    :data-test="`log-search-index-list-filter-${props.row.name}-field-btn`"
+                    :data-test="`trace-search-index-list-filter-${props.row.name}-field-btn`"
                     style="margin-right: 0.375rem"
                     size="1rem"
                     @click.stop="addToFilter(props.row.name)"
@@ -76,7 +76,7 @@
                     </div>
                     <div class="field_overlay">
                       <q-icon
-                        :data-test="`log-search-index-list-filter-${props.row.name}-field-btn`"
+                        :data-test="`trace-search-index-list-filter-${props.row.name}-field-btn`"
                         :name="
                           'img:' + getImageURL('images/common/add_icon.svg')
                         "
@@ -176,7 +176,7 @@
         </template>
         <template #top-right>
           <q-input
-            data-test="log-search-index-list-field-search-input"
+            data-test="trace-search-index-list-field-search-input"
             v-model="searchObj.data.stream.filterField"
             data-cy="index-field-search-input"
             filled
