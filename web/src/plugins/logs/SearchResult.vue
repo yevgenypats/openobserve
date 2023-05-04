@@ -15,6 +15,7 @@
 
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <!-- eslint-disable vue/attribute-hyphenation -->
+
 <template>
   <div class="col column oveflow-hidden">
     <div class="search-list" style="width: 100%">
@@ -71,12 +72,15 @@
 
         <template v-slot="{ item: row, index }">
           <q-tr
-            :data-test="`logs-search-result-detail-${row[store.state.zoConfig.timestamp_column]}`"
+            :data-test="`logs-search-result-detail-${
+              row[store.state.zoConfig.timestamp_column]
+            }`"
             :key="'expand_' + index"
             @click="expandRowDetail(row, index)"
             style="cursor: pointer"
             :style="
-              row[store.state.zoConfig.timestamp_column] == searchObj.data.searchAround.indexTimestamp
+              row[store.state.zoConfig.timestamp_column] ==
+              searchObj.data.searchAround.indexTimestamp
                 ? 'background-color:lightgray'
                 : ''
             "
@@ -134,6 +138,7 @@
         ></template>
       </q-virtual-scroll>
       <q-dialog
+        v-if="searchObj.data.queryResults.hits?.length"
         v-model="searchObj.meta.showDetailTab"
         position="right"
         full-height
@@ -272,10 +277,6 @@ export default defineComponent({
       }
     };
 
-    const changeMaxRecordToReturn = (val: any) => {
-      // searchObj.meta.resultGrid.pagination.rowsPerPage = val;
-    };
-
     const expandRowDetail = (props: any, index: number) => {
       searchObj.meta.showDetailTab = true;
       searchObj.meta.resultGrid.navigation.currentRowIndex = index;
@@ -318,7 +319,6 @@ export default defineComponent({
       addSearchTerm,
       removeSearchTerm,
       expandRowDetail,
-      changeMaxRecordToReturn,
       navigateRowDetail,
       totalHeight,
       reDrawChart,

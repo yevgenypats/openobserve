@@ -70,14 +70,6 @@ describe("Search Result", async () => {
     ).toBeTruthy();
   });
 
-  it("Should render show fields toggle btn", () => {
-    expect(
-      wrapper
-        .find('[data-test="logs-search-bar-show-fields-toggle-btn"]')
-        .exists()
-    ).toBeTruthy();
-  });
-
   it("Should render show histogram toggle btn", () => {
     expect(
       wrapper

@@ -6,7 +6,7 @@ exports[`FluentBit > should render content 1`] = `
   Match *
   URI /api/zinc_next/default/_json
   Host localhost
-  Port 808
+  Port 8080
   tls Off
   Format json
   Json_date_key    _timestamp

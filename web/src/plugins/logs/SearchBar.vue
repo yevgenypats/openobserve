@@ -214,7 +214,8 @@
           <template #after>
             <div v-show="searchObj.meta.toggleFunction" style="height: 100%">
               <b>VRL Function Editor:</b>
-              <div ref="fnEditorRef" id="fnEditor" style="height: 100%"></div>
+              <div ref="fnEditorRef" id="fnEditor"
+style="height: 100%"></div>
             </div>
           </template>
         </q-splitter>
@@ -228,10 +229,10 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn label="Cancel"
-color="primary" @click="cancelConfirmDialog" />
-          <q-btn label="OK"
-color="positive" @click="confirmDialogOK" />
+          <q-btn label="Cancel" color="primary"
+@click="cancelConfirmDialog" />
+          <q-btn label="OK" color="positive"
+@click="confirmDialogOK" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -789,8 +790,8 @@ export default defineComponent({
 }
 
 .search-bar-component > .row:nth-child(2) {
-    height: calc(100% - 38px); /* or any other height you want to set */
-  }
+  height: calc(100% - 38px); /* or any other height you want to set */
+}
 
 .search-bar-component {
   padding-bottom: 1px;

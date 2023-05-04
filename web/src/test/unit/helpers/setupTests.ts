@@ -133,6 +133,13 @@ export const restHandlers = [
       })
     );
   }),
+
+  rest.get(
+    `${store.state.API_ENDPOINT}/api/${store.state.selectedOrganization.identifier}/functions`,
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json({ list: [] }));
+    }
+  ),
 ];
 const server = setupServer(...restHandlers);
 

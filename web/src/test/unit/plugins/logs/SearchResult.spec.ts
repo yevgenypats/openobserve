@@ -79,11 +79,11 @@ describe("Search Result", async () => {
     ).toBeTruthy();
   });
 
-  //   it("Should render the q-virtual-scroll component with the correct props and call the 'onScroll' method when the 'virtual-scroll' event is emitted", () => {
-  //     expect(
-  //       wrapper.find('[data-test="logs-search-result-logs-table"]').html()
-  //     ).toMatchSnapshot();
-  //   });
+  // it("Should render the q-virtual-scroll component with the correct props and call the 'onScroll' method when the 'virtual-scroll' event is emitted", () => {
+  //   expect(
+  //     wrapper.find('[data-test="logs-search-result-logs-table"]').html()
+  //   ).toMatchSnapshot();
+  // });
 
   describe("When user opens log details", () => {
     let expandRowDetail: any, hits: any[], addSearchTerm: any;

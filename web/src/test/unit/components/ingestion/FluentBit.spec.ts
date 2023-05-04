@@ -1,16 +1,10 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { installQuasar } from "../../helpers/install-quasar-plugin";
-import { createStore } from "vuex";
 import FluentBit from "@/components/ingestion/FluentBit.vue";
+import store from "../../helpers/store";
 
 installQuasar();
-const store = createStore({
-  state: {
-    organizationPasscode: 11,
-    API_ENDPOINT: "http://localhost:808",
-  },
-});
 describe("FluentBit", async () => {
   let wrapper: any;
   beforeEach(() => {
