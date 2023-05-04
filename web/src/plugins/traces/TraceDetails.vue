@@ -25,11 +25,24 @@
       class="row q-px-sm"
       v-if="traceTree.length && !searchObj.data.traceDetails.loading"
     >
-      <div class="q-py-sm flex items-center justify-start col-12 toolbar">
-        <div class="text-h6 q-mr-lg">
-          {{ traceTree[0]["operationName"] }}
+      <div
+        class="q-py-sm q-px-sm flex items-center justify-between col-12 toolbar"
+      >
+        <div class="flex items-center justify-start">
+          <div class="text-h6 q-mr-lg">
+            {{ traceTree[0]["operationName"] }}
+          </div>
+          <div>Spans: {{ spanList.length - 1 }}</div>
         </div>
-        <div>Spans: {{ spanList.length - 1 }}</div>
+        <div>
+          <q-btn
+            v-close-popup
+            round
+            flat
+            size="md"
+            :icon="'img:' + getImageURL('images/common/close_icon.svg')"
+          />
+        </div>
       </div>
       <trace-chart
         id="trace_details_gantt_chart"
@@ -103,7 +116,7 @@ import TraceTree from "./TraceTree.vue";
 import TraceHeader from "./TraceHeader.vue";
 import TraceChart from "./TraceChart.vue";
 import { useStore } from "vuex";
-import { duration } from "moment";
+import { getImageURL } from "@/utils/zincUtils";
 
 export default defineComponent({
   name: "TraceDetails",
@@ -488,6 +501,7 @@ export default defineComponent({
       plotChart,
       traceChart,
       updateChart,
+      getImageURL,
     };
   },
 });
