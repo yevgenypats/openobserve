@@ -26,7 +26,7 @@
       />
 
       <q-virtual-scroll
-        data-test="logs-search-result-logs-table"
+        data-test="traces-search-result-logs-table"
         id="tracesSearchGridComponent"
         type="table"
         ref="searchTableRef"
@@ -40,13 +40,16 @@
         @virtual-scroll="onScroll"
       >
         <template v-slot:before>
-          <thead class="thead-sticky text-left">
+          <thead
+            data-test="traces-result-table-head"
+            class="thead-sticky text-left"
+          >
             <tr>
               <th
                 v-for="(col, index) in searchObj.data.resultGrid.columns"
                 :key="'result_' + index"
                 class="table-header"
-                :data-test="`log-search-result-table-th-${col.label}`"
+                :data-test="`trace-search-result-table-th-${col.label}`"
               >
                 <span class="table-head-label">
                   {{ col.label }}
@@ -58,9 +61,7 @@
 
         <template v-slot="{ item: row, index }">
           <q-tr
-            :data-test="`logs-search-result-detail-${
-              row[store.state.zoConfig.timestamp_column]
-            }`"
+            data-test="traces-result-table-body-row"
             :key="'expand_' + index"
             @click="expandRowDetail(row, index)"
             style="cursor: pointer"
@@ -127,7 +128,7 @@
         maximized
         @hide="closeTraceDetails"
       >
-        <trace-details />
+        <trace-details data-test="trace-details-popup" />
       </q-dialog>
     </div>
   </div>
