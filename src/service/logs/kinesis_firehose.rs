@@ -253,7 +253,7 @@ pub async fn process(
 
     // write to file
     let mut stream_file_name = "".to_string();
-    let mut req_stats = write_file(buf, thread_id, org_id, stream_name, &mut stream_file_name);
+    let mut req_stats = write_file(buf, thread_id, org_id, stream_name, StreamType::Logs);
 
     if stream_file_name.is_empty() {
         return Ok(
@@ -276,7 +276,6 @@ pub async fn process(
     report_ingest_stats(
         &req_stats,
         org_id,
-        &stream_name,
         StreamType::Logs,
         UsageEvent::KinesisFirehose,
     )

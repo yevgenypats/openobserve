@@ -22,8 +22,12 @@ use std::{
 };
 
 use super::StreamMeta;
+use crate::common::json;
 use crate::common::{flatten, json, time::parse_timestamp_micro_from_value};
+use crate::infra::cluster;
+use crate::infra::config::CONFIG;
 use crate::infra::{cluster, config::CONFIG, metrics};
+use crate::meta::alert::Alert;
 #[cfg(feature = "zo_functions")]
 use crate::meta::functions::{StreamTransform, VRLRuntimeConfig};
 use crate::meta::usage::{RequestStats, UsageEvent};
@@ -283,7 +287,6 @@ pub async fn ingest(
             }
         }
     }
-
     let mut final_req_stats = RequestStats::default();
     for (stream_name, stream_data) in stream_data_map {
         // check if we are allowed to ingest
@@ -295,15 +298,13 @@ pub async fn ingest(
         // write to file
         let mut stream_file_name = "".to_string();
 
-        let req_stats = write_file(
+        final_req_stats = write_file(
             stream_data.data,
             thread_id.clone(),
             org_id,
             &stream_name,
             StreamType::Logs,
         );
-        final_req_stats.size += req_stats.size;
-        final_req_stats.records += req_stats.records;
     }
 
     // only one trigger per request, as it updates etcd
@@ -314,14 +315,7 @@ pub async fn ingest(
     let time = start.elapsed().as_secs_f64();
     final_req_stats.response_time += time;
     //metric + data usage
-    report_ingest_stats(
-        &final_req_stats,
-        org_id,
-        &stream_name,
-        StreamType::Logs,
-        UsageEvent::Bulk,
-    )
-    .await;
+    report_ingest_stats(&final_req_stats, org_id, StreamType::Logs, UsageEvent::Bulk).await;
     bulk_res.took = start.elapsed().as_millis();
 
     Ok(bulk_res)
