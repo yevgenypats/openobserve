@@ -5,11 +5,27 @@ use datafusion::arrow::datatypes::Schema;
 use flate2::read::GzDecoder;
 use std::{io::Read, time::Instant};
 
+use crate::common::json;
+use crate::common::time::parse_i64_to_timestamp_micros;
+use crate::common::time::parse_timestamp_micro_from_value;
 use crate::common::{
     flatten, json,
     time::{parse_i64_to_timestamp_micros, parse_timestamp_micro_from_value},
 };
+use crate::infra::cluster;
+use crate::infra::config::CONFIG;
+use crate::infra::metrics;
 use crate::infra::{cluster, config::CONFIG, metrics};
+use crate::meta::alert::{Alert, Trigger};
+use crate::meta::http::HttpResponse as MetaHttpResponse;
+use crate::meta::ingestion::AWSRecordType;
+use crate::meta::ingestion::KinesisFHData;
+use crate::meta::ingestion::KinesisFHIngestionResponse;
+use crate::meta::ingestion::KinesisFHRequest;
+use crate::meta::ingestion::RecordStatus;
+use crate::meta::ingestion::StreamStatus;
+use crate::meta::usage::UsageEvent;
+use crate::meta::StreamType;
 use crate::meta::{
     alert::{Alert, Trigger},
     ingestion::{
@@ -18,6 +34,9 @@ use crate::meta::{
     },
     StreamType,
 };
+use crate::service::db;
+use crate::service::ingestion::write_file;
+use crate::service::usage::report_ingest_stats;
 use crate::service::{db, ingestion::write_file};
 
 use super::StreamMeta;
@@ -233,29 +252,35 @@ pub async fn process(
     }
 
     // write to file
-    write_file(buf, thread_id, org_id, stream_name, StreamType::Logs);
+    let mut stream_file_name = "".to_string();
+    let mut req_stats = write_file(buf, thread_id, org_id, stream_name, &mut stream_file_name);
+
+    if stream_file_name.is_empty() {
+        return Ok(
+            HttpResponse::InternalServerError().json(KinesisFHIngestionResponse {
+                request_id: request.request_id,
+                error_message: Some(
+                    json::to_string(&stream_status)
+                        .unwrap_or("error processing request".to_string()),
+                ),
+                timestamp: request.timestamp.unwrap_or(Utc::now().timestamp_micros()),
+            }),
+        );
+    }
 
     // only one trigger per request, as it updates etcd
     super::evaluate_trigger(trigger, stream_alerts_map).await;
 
-    metrics::HTTP_RESPONSE_TIME
-        .with_label_values(&[
-            "/_multi",
-            "200",
-            org_id,
-            stream_name,
-            StreamType::Logs.to_string().as_str(),
-        ])
-        .observe(start.elapsed().as_secs_f64());
-    metrics::HTTP_INCOMING_REQUESTS
-        .with_label_values(&[
-            "/_multi",
-            "200",
-            org_id,
-            stream_name,
-            StreamType::Logs.to_string().as_str(),
-        ])
-        .inc();
+    req_stats.response_time = start.elapsed().as_secs_f64();
+    //metric + data usage
+    report_ingest_stats(
+        &req_stats,
+        org_id,
+        &stream_name,
+        StreamType::Logs,
+        UsageEvent::KinesisFirehose,
+    )
+    .await;
 
     Ok(KinesisFHIngestionResponse {
         request_id: request.request_id,

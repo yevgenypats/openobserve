@@ -26,6 +26,8 @@ use crate::common::{flatten, json, time::parse_timestamp_micro_from_value};
 use crate::infra::{cluster, config::CONFIG, metrics};
 #[cfg(feature = "zo_functions")]
 use crate::meta::functions::{StreamTransform, VRLRuntimeConfig};
+use crate::meta::usage::{RequestStats, UsageEvent};
+use crate::meta::StreamType;
 use crate::meta::{
     alert::{Alert, Trigger},
     ingestion::{
@@ -34,7 +36,12 @@ use crate::meta::{
     },
     StreamType,
 };
+use crate::service::db;
+use crate::service::ingestion::write_file;
+use crate::service::schema::stream_schema_exists;
+use crate::service::usage::report_ingest_stats;
 use crate::service::{db, ingestion::write_file, schema::stream_schema_exists};
+use crate::{common::time::parse_timestamp_micro_from_value, meta::alert::Trigger};
 
 pub const TRANSFORM_FAILED: &str = "document_failed_transform";
 pub const TS_PARSE_FAILED: &str = "timestamp_parsing_failed";
@@ -277,6 +284,7 @@ pub async fn ingest(
         }
     }
 
+    let mut final_req_stats = RequestStats::default();
     for (stream_name, stream_data) in stream_data_map {
         // check if we are allowed to ingest
         if db::compact::delete::is_deleting_stream(org_id, &stream_name, StreamType::Logs, None) {
@@ -285,13 +293,17 @@ pub async fn ingest(
             )));
         }
         // write to file
-        write_file(
+        let mut stream_file_name = "".to_string();
+
+        let req_stats = write_file(
             stream_data.data,
             thread_id.clone(),
             org_id,
             &stream_name,
             StreamType::Logs,
         );
+        final_req_stats.size += req_stats.size;
+        final_req_stats.records += req_stats.records;
     }
 
     // only one trigger per request, as it updates etcd
@@ -300,24 +312,16 @@ pub async fn ingest(
     }
 
     let time = start.elapsed().as_secs_f64();
-    metrics::HTTP_RESPONSE_TIME
-        .with_label_values(&[
-            "/_bulk",
-            "200",
-            org_id,
-            "",
-            StreamType::Logs.to_string().as_str(),
-        ])
-        .observe(time);
-    metrics::HTTP_INCOMING_REQUESTS
-        .with_label_values(&[
-            "/_bulk",
-            "200",
-            org_id,
-            "",
-            StreamType::Logs.to_string().as_str(),
-        ])
-        .inc();
+    final_req_stats.response_time += time;
+    //metric + data usage
+    report_ingest_stats(
+        &final_req_stats,
+        org_id,
+        &stream_name,
+        StreamType::Logs,
+        UsageEvent::Bulk,
+    )
+    .await;
     bulk_res.took = start.elapsed().as_millis();
 
     Ok(bulk_res)
