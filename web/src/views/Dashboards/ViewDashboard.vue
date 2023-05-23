@@ -23,7 +23,7 @@
         <span class="q-table__title q-mx-md q-mt-xs">{{ currentDashboardData.data.title }}</span>
       </div>
       <div class="flex">
-        <q-btn outline padding="xs" no-caps icon="add" @click="addPanelData">
+        <q-btn outline padding="xs" no-caps icon="add" @click="addPanelData" data-test="dashboard-panel-add" >
           <q-tooltip>{{ t('panel.add') }}</q-tooltip>
         </q-btn>
         <q-btn outline padding="xs" class="q-ml-sm" no-caps icon="settings" @click="addSettingsData">
