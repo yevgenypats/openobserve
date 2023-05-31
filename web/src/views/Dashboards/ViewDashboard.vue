@@ -52,7 +52,7 @@
           :w="getPanelLayout(currentDashboardData.data.layouts, item.id, 'w')" :h="getPanelLayout(currentDashboardData.data.layouts, item.id, 'h')"
           :i="getPanelLayout(currentDashboardData.data.layouts, item.id, 'i')" :minH="getMinimumHeight(item.type)" :minW="getMinimumWidth(item.type)" @resized="resizedEvent" @moved="movedEvent"
           drag-allow-from=".drag-allow">
-          <div style="height: 100%;">
+          <div style="height: 100%;" :data-test="`dashboard-panel-${item?.config?.title}`">
             <PanelContainer @updated:chart="onUpdatePanel" @duplicatePanel="onDuplicatePanel" :draggable="draggable" :data="item"
               :selectedTimeDate="currentTimeObj" :variablesData="variablesData"
               :width="getPanelLayout(currentDashboardData.data.layouts, item.id, 'w')" :height="getPanelLayout(currentDashboardData.data.layouts, item.id, 'h')">
