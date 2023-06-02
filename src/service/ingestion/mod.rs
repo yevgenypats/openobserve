@@ -47,6 +47,15 @@ use crate::meta::functions::{StreamTransform, VRLRuntimeConfig};
 use crate::meta::{
     alert::{Alert, Trigger},
     StreamType,
+use crate::meta::functions::StreamTransform;
+#[cfg(feature = "zo_functions")]
+use crate::meta::functions::VRLRuntimeConfig;
+
+use crate::meta::StreamType;
+use crate::{
+    common::notification::send_notification,
+    infra::config::STREAM_ALERTS,
+    meta::alert::{Alert, Trigger},
 };
 
 #[cfg(feature = "zo_functions")]
@@ -317,7 +326,7 @@ pub async fn chk_schema_by_record(
     .unwrap();
 }
 
-pub fn write_file(
+pub fn _write_file(
     buf: AHashMap<String, Vec<String>>,
     thread_id: actix_web::web::Data<usize>,
     org_id: &str,
