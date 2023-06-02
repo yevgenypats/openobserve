@@ -305,6 +305,8 @@ pub async fn ingest(
             &stream_name,
             StreamType::Logs,
         );
+        final_req_stats.size += final_req_stats.size;
+        final_req_stats.records += final_req_stats.records;
     }
 
     // only one trigger per request, as it updates etcd
