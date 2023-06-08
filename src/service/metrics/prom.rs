@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use ahash::AHashMap;
-use bytes::{BufMut, BytesMut};
 use chrono::{Duration, TimeZone, Utc};
 use datafusion::arrow::datatypes::Schema;
 use promql_parser::{label::MatchOp, parser};
@@ -32,6 +31,7 @@ use crate::{
     meta::{
         self,
         alert::{Alert, Trigger},
+        functions::StreamTransform,
         prom::{self, HASH_LABEL, METADATA_LABEL, NAME_LABEL, VALUE_LABEL},
         usage::{RequestStats, UsageEvent},
         StreamType,
@@ -58,7 +58,6 @@ pub async fn remote_write(
     if !cluster::is_ingester(&cluster::LOCAL_NODE_ROLE) {
         return Err(anyhow::anyhow!("not an ingester"));
     }
-
     let mut min_ts =
         (Utc::now() + Duration::hours(CONFIG.limit.ingest_allowed_upto)).timestamp_micros();
     let dedup_enabled = CONFIG.common.metrics_dedup_enabled;
@@ -71,6 +70,7 @@ pub async fn remote_write(
     let mut metric_schema_map: AHashMap<String, Schema> = AHashMap::new();
     let mut stream_alerts_map: AHashMap<String, Vec<Alert>> = AHashMap::new();
     let mut stream_trigger_map: AHashMap<String, Trigger> = AHashMap::new();
+    let mut stream_transform_map: AHashMap<String, Vec<StreamTransform>> = AHashMap::new();
 
     let decoded = snap::raw::Decoder::new()
         .decompress_vec(&body)
@@ -213,34 +213,32 @@ pub async fn remote_write(
             crate::service::ingestion::get_stream_alerts(key, &mut stream_alerts_map).await;
             // End get stream alert
 
-            #[cfg(feature = "zo_functions")]
             let mut runtime = crate::service::ingestion::init_functions_runtime();
 
             // Start Register Transforms for stream
-            #[cfg(feature = "zo_functions")]
+
             let (local_tans, stream_vrl_map) =
                 crate::service::ingestion::register_stream_transforms(
                     org_id,
                     StreamType::Metrics,
                     &metric_name,
                 );
+
+            stream_transform_map.insert(metric_name.to_owned(), local_tans.clone());
             // End Register Transforms for stream
 
-            #[cfg(not(feature = "zo_functions"))]
             let mut value: json::Value = json::to_value(&metric).unwrap();
 
-            #[cfg(feature = "zo_functions")]
-            let value: json::Value = json::to_value(&metric).unwrap();
-
             // Start row based transform
-            #[cfg(feature = "zo_functions")]
-            let mut value = crate::service::ingestion::apply_stream_transform(
+
+            value = crate::service::ingestion::apply_stream_transform(
                 &local_tans,
                 &value,
                 &stream_vrl_map,
                 &metric_name,
                 &mut runtime,
-            )?;
+            );
+
             // End row based transform
 
             // get json object
@@ -372,11 +370,13 @@ pub async fn remote_write(
     let time = start.elapsed().as_secs_f64();
     final_req_stats.response_time += time;
     //metric + data usage
+    let fns_length: usize = stream_transform_map.values().map(|v| v.len()).sum();
     report_ingest_stats(
         &final_req_stats,
         org_id,
         StreamType::Metrics,
         UsageEvent::Metrics,
+        fns_length as u16,
     )
     .await;
 

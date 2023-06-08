@@ -118,9 +118,9 @@ pub async fn traces_json(
 
     let mut trigger: Option<Trigger> = None;
     /*   // Start Register Transforms for stream
-    #[cfg(feature = "zo_functions")]
+
     let (lua, mut runtime) = crate::service::ingestion::init_functions_runtime();
-    #[cfg(feature = "zo_functions")]
+
     let (local_tans, stream_lua_map, stream_vrl_map) =
         crate::service::ingestion::register_stream_transforms(
             org_id,
@@ -280,7 +280,7 @@ pub async fn traces_json(
                             value = flatten::flatten(&value).unwrap();
 
                             /*     // Start row based transform
-                            #[cfg(feature = "zo_functions")]
+
                             let mut value = crate::service::ingestion::apply_stream_transform(
                                 &local_tans,
                                 &value,
@@ -290,7 +290,7 @@ pub async fn traces_json(
                                 traces_stream_name,
                                 &mut runtime,
                             );
-                            #[cfg(feature = "zo_functions")]
+
                             if value.is_null() || !value.is_object() {
                                 continue;
                             }
@@ -393,7 +393,14 @@ pub async fn traces_json(
     );
     req_stats.response_time = start.elapsed().as_secs_f64();
     //metric + data usage
-    report_ingest_stats(&req_stats, org_id, StreamType::Traces, UsageEvent::Traces).await;
+    report_ingest_stats(
+        &req_stats,
+        org_id,
+        StreamType::Traces,
+        UsageEvent::Traces,
+        0,
+    )
+    .await;
 
     let schema_exists = stream_schema_exists(
         org_id,

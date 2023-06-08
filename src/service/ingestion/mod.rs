@@ -22,33 +22,29 @@ use arrow_schema::Schema;
 use bytes::{BufMut, BytesMut};
 use chrono::{TimeZone, Utc};
 use datafusion::arrow::json::reader::infer_json_schema;
-#[cfg(feature = "zo_functions")]
+
 use std::collections::BTreeMap;
 use std::io::BufReader;
-#[cfg(feature = "zo_functions")]
+
 use vector_enrichment::TableRegistry;
-#[cfg(feature = "zo_functions")]
-use vrl::compiler::{runtime::Runtime, CompilationResult, TargetValueRef};
-#[cfg(feature = "zo_functions")]
+
+use vrl::compiler::TargetValueRef;
+
+use vrl::compiler::{runtime::Runtime, CompilationResult};
+
 use vrl::prelude::state;
 
 use super::{db, triggers};
-use crate::common::flatten;
-#[cfg(feature = "zo_functions")]
+
 use crate::common::functions::get_vrl_compiler_config;
-use crate::common::json::{Map, Value};
-use crate::common::notification::send_notification;
-#[cfg(feature = "zo_functions")]
+
+use crate::common::json;
+
 use crate::infra::config::STREAM_FUNCTIONS;
 use crate::infra::config::{CONFIG, STREAM_ALERTS};
 use crate::infra::metrics;
-#[cfg(feature = "zo_functions")]
-use crate::meta::functions::{StreamTransform, VRLRuntimeConfig};
-use crate::meta::{
-    alert::{Alert, Trigger},
-    StreamType,
 use crate::meta::functions::StreamTransform;
-#[cfg(feature = "zo_functions")]
+
 use crate::meta::functions::VRLRuntimeConfig;
 
 use crate::meta::StreamType;
@@ -58,7 +54,6 @@ use crate::{
     meta::alert::{Alert, Trigger},
 };
 
-#[cfg(feature = "zo_functions")]
 pub fn compile_vrl_function(func: &str, org_id: &str) -> Result<VRLRuntimeConfig, std::io::Error> {
     if func.contains("get_env_var") {
         return Err(std::io::Error::new(
@@ -91,7 +86,6 @@ pub fn compile_vrl_function(func: &str, org_id: &str) -> Result<VRLRuntimeConfig
     }
 }
 
-#[cfg(feature = "zo_functions")]
 pub fn apply_vrl_fn(runtime: &mut Runtime, vrl_runtime: &VRLRuntimeConfig, row: &Value) -> Value {
     let mut metadata = vrl::value::Value::from(BTreeMap::new());
     let mut target = TargetValueRef {
@@ -117,7 +111,6 @@ pub fn apply_vrl_fn(runtime: &mut Runtime, vrl_runtime: &VRLRuntimeConfig, row: 
     }
 }
 
-#[cfg(feature = "zo_functions")]
 pub async fn get_stream_transforms<'a>(
     org_id: &str,
     stream_type: StreamType,
@@ -236,7 +229,6 @@ pub async fn send_ingest_notification(trigger: Trigger, alert: Alert) {
     let _ = triggers::save_trigger(&trigger_to_save.alert_name, &trigger_to_save).await;
 }
 
-#[cfg(feature = "zo_functions")]
 pub fn register_stream_transforms(
     org_id: &str,
     stream_type: StreamType,
@@ -266,7 +258,6 @@ pub fn register_stream_transforms(
     (local_tans, stream_vrl_map)
 }
 
-#[cfg(feature = "zo_functions")]
 pub fn apply_stream_transform<'a>(
     local_tans: &Vec<StreamTransform>,
     value: &'a Value,
@@ -376,7 +367,6 @@ pub fn _write_file(
     }
 }
 
-#[cfg(feature = "zo_functions")]
 pub fn init_functions_runtime() -> Runtime {
     crate::common::functions::init_vrl_runtime()
 }
@@ -420,12 +410,8 @@ pub fn write_file(
         metrics::INGEST_BYTES
             .with_label_values(&[org_id, stream_name, stream_type.to_string().as_str()])
             .inc_by(write_buf.len() as u64);
-        RequestStats {
-            size: write_buf.len() as f64,
-            records: write_buf.len() as u64,
-            response_time: 0.0,
-        };
-        req_stats.size += write_buf.len() as f64;
+
+        req_stats.size += write_buf.len() as f64 / (1024.0 * 1024.0);
         req_stats.records += entry.len() as u64;
     }
     req_stats
@@ -492,7 +478,7 @@ mod tests {
     }
 
     #[actix_web::test]
-    #[cfg(feature = "zo_functions")]
+
     async fn test_compile_vrl_function() {
         let result = compile_vrl_function(
             r#"if .country == "USA" {
