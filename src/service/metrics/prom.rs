@@ -17,8 +17,7 @@ use chrono::{Duration, TimeZone, Utc};
 use datafusion::arrow::datatypes::Schema;
 use promql_parser::{label::MatchOp, parser};
 use prost::Message;
-use rustc_hash::FxHashSet;
-use std::{collections::HashMap, io, time::Instant};
+use std::{collections::HashMap, time::Instant};
 
 use crate::{
     common::{json, time::parse_i64_to_timestamp_micros},
@@ -71,6 +70,7 @@ pub async fn remote_write(
     let mut stream_alerts_map: AHashMap<String, Vec<Alert>> = AHashMap::new();
     let mut stream_trigger_map: AHashMap<String, Trigger> = AHashMap::new();
     let mut stream_transform_map: AHashMap<String, Vec<StreamTransform>> = AHashMap::new();
+    let mut final_req_stats = RequestStats::default();
 
     let decoded = snap::raw::Decoder::new()
         .decompress_vec(&body)
@@ -237,7 +237,7 @@ pub async fn remote_write(
                 &stream_vrl_map,
                 &metric_name,
                 &mut runtime,
-            );
+            )?;
 
             // End row based transform
 
@@ -310,35 +310,32 @@ pub async fn remote_write(
         }
     }
 
-    for (metric_name, metric_data) in metric_data_map {
+    for (stream_name, stream_data) in metric_data_map {
         // write to file
         let mut stream_file_name = "".to_string();
 
         // check if we are allowed to ingest
-        if db::compact::delete::is_deleting_stream(org_id, &metric_name, StreamType::Metrics, None)
+        if db::compact::delete::is_deleting_stream(org_id, &stream_name, StreamType::Metrics, None)
         {
-            return Ok(
-                HttpResponse::InternalServerError().json(meta::http::HttpResponse::error(
-                    http::StatusCode::INTERNAL_SERVER_ERROR.into(),
-                    format!("stream [{metric_name}] is being deleted"),
-                )),
-            );
+            return Err(anyhow::anyhow!(format!(
+                "stream [{stream_name}] is being deleted"
+            )));
         }
 
-        final_req_stats = write_file(
-            metric_data,
+        let req_stats = write_file(
+            stream_data,
             thread_id.clone(),
             org_id,
-            &metric_name,
+            &stream_name,
             &mut stream_file_name,
             StreamType::Logs,
         );
-        final_req_stats.size += final_req_stats.size;
-        final_req_stats.records += final_req_stats.records;
+        final_req_stats.size += req_stats.size;
+        final_req_stats.records += req_stats.records;
 
         let _schema_exists = stream_schema_exists(
             org_id,
-            &metric_name,
+            &stream_name,
             StreamType::Metrics,
             &mut metric_schema_map,
         )

@@ -18,43 +18,30 @@ use chrono::{Duration, Utc};
 use datafusion::arrow::datatypes::Schema;
 use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
 use prost::Message;
+use std::time::Instant;
 use std::{
     fs::OpenOptions,
     io::{BufRead, BufReader, Error},
 };
 
 use crate::common::{flatten, json};
-use crate::infra::{cluster, config::CONFIG, wal};
+use crate::infra::{cluster, config::CONFIG};
 use crate::meta::{
     alert::{Alert, Evaluate, Trigger},
     http::HttpResponse as MetaHttpResponse,
     traces::{Event, Span, SpanRefType},
     StreamType,
 };
+use crate::service::ingestion::write_file;
 use crate::service::{
     ingestion::{format_stream_name, get_partition_key_record},
     schema::{add_stream_schema, stream_schema_exists},
-use std::fs::OpenOptions;
-use std::io::{BufRead, BufReader, Error};
-use std::time::Instant;
+};
 
 use crate::common::json::{Map, Value};
-use crate::infra::config::CONFIG;
-use crate::meta::alert::{Alert, Trigger};
-use crate::meta::traces::Event;
+
 use crate::meta::usage::UsageEvent;
-use crate::service::ingestion::{format_stream_name, get_partition_key_record, write_file};
-use crate::service::schema::{add_stream_schema, stream_schema_exists};
 use crate::service::usage::report_ingest_stats;
-use crate::{
-    common::json,
-    infra::cluster,
-    meta::{
-        self,
-        traces::{Span, SpanRefType},
-        StreamType,
-    },
-};
 
 const PARENT_SPAN_ID: &str = "reference.parent_span_id";
 const PARENT_TRACE_ID: &str = "reference.parent_trace_id";

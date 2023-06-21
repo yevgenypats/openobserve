@@ -21,20 +21,11 @@ use std::{
     time::Instant,
 };
 
-use crate::common::{flatten, json, time::parse_timestamp_micro_from_value};
-use crate::infra::{cluster, config::CONFIG, metrics};
-use crate::meta::{
-    alert::{Alert, Trigger},
-    ingestion::{IngestionResponse, RecordStatus, StreamStatus},
-    StreamType,
-};
-use crate::service::{db, ingestion::write_file, logs::StreamMeta, schema::stream_schema_exists};
-use crate::common::json;
 use crate::common::time::parse_timestamp_micro_from_value;
+use crate::common::{flatten, json};
 use crate::infra::cluster;
 use crate::infra::config::CONFIG;
 use crate::meta::alert::{Alert, Trigger};
-use crate::meta::http::HttpResponse as MetaHttpResponse;
 use crate::meta::ingestion::{IngestionResponse, RecordStatus, StreamStatus};
 use crate::meta::usage::UsageEvent;
 use crate::meta::StreamType;
@@ -200,10 +191,10 @@ pub async fn ingest(
     );
 
     if stream_file_name.is_empty() {
-        return Ok(HttpResponse::Ok().json(IngestionResponse::new(
+        return Ok(IngestionResponse::new(
             http::StatusCode::OK.into(),
             vec![stream_status],
-        )));
+        ));
     }
 
     // only one trigger per request, as it updates etcd
@@ -219,7 +210,7 @@ pub async fn ingest(
         local_trans.len() as u16,
     )
     .await;
-    Ok(HttpResponse::Ok().json(IngestionResponse::new(
+    Ok(IngestionResponse::new(
         http::StatusCode::OK.into(),
         vec![stream_status],
     ))

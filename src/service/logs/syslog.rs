@@ -19,11 +19,11 @@ use datafusion::arrow::datatypes::Schema;
 use std::{net::SocketAddr, time::Instant};
 use syslog_loose::{Message, ProcId, Protocol};
 
+use super::StreamMeta;
 use crate::common::{flatten, json, time::parse_timestamp_micro_from_value};
 use crate::infra::{
     cluster,
     config::{CONFIG, SYSLOG_ROUTES},
-    metrics,
 };
 use crate::meta::{
     alert::{Alert, Trigger},
@@ -33,20 +33,6 @@ use crate::meta::{
     StreamType,
 };
 use crate::service::{db, ingestion::write_file, schema::stream_schema_exists};
-
-use super::StreamMeta;
-use crate::common::json;
-use crate::common::time::parse_timestamp_micro_from_value;
-use crate::infra::cluster;
-use crate::infra::config::{CONFIG, SYSLOG_ROUTES};
-use crate::meta::alert::{Alert, Trigger};
-use crate::meta::http::HttpResponse as MetaHttpResponse;
-use crate::meta::ingestion::{IngestionResponse, RecordStatus, StreamSchemaChk, StreamStatus};
-use crate::meta::syslog::SyslogRoute;
-use crate::meta::StreamType;
-use crate::service::db;
-use crate::service::ingestion::write_file;
-use crate::service::schema::stream_schema_exists;
 
 pub async fn ingest(msg: &str, addr: SocketAddr) -> Result<HttpResponse, ()> {
     let _start = Instant::now();

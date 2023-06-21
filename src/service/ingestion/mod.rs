@@ -13,7 +13,10 @@
 // limitations under the License.
 
 use crate::{
-    common::json::{Map, Value},
+    common::{
+        flatten,
+        json::{Map, Value},
+    },
     infra::{config::CONFIG, wal::get_or_create},
     meta::usage::RequestStats,
 };
@@ -22,35 +25,23 @@ use arrow_schema::Schema;
 use bytes::{BufMut, BytesMut};
 use chrono::{TimeZone, Utc};
 use datafusion::arrow::json::reader::infer_json_schema;
-
 use std::collections::BTreeMap;
 use std::io::BufReader;
-
 use vector_enrichment::TableRegistry;
-
 use vrl::compiler::TargetValueRef;
-
 use vrl::compiler::{runtime::Runtime, CompilationResult};
-
 use vrl::prelude::state;
 
 use super::{db, triggers};
-
 use crate::common::functions::get_vrl_compiler_config;
-
-use crate::common::json;
-
+use crate::infra::config::STREAM_ALERTS;
 use crate::infra::config::STREAM_FUNCTIONS;
-use crate::infra::config::{CONFIG, STREAM_ALERTS};
 use crate::infra::metrics;
 use crate::meta::functions::StreamTransform;
-
 use crate::meta::functions::VRLRuntimeConfig;
-
 use crate::meta::StreamType;
 use crate::{
     common::notification::send_notification,
-    infra::config::STREAM_ALERTS,
     meta::alert::{Alert, Trigger},
 };
 

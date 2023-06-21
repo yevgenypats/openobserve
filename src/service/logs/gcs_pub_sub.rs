@@ -45,7 +45,6 @@ pub async fn process(
         )));
     }
 
-    #[cfg(feature = "zo_functions")]
     let mut runtime = crate::service::ingestion::init_functions_runtime();
 
     let mut stream_schema_map: AHashMap<String, Schema> = AHashMap::new();
@@ -62,7 +61,7 @@ pub async fn process(
     let mut trigger: Option<Trigger> = None;
 
     // Start Register Transforms for stream
-    #[cfg(feature = "zo_functions")]
+
     let (local_tans, stream_vrl_map) = crate::service::ingestion::register_stream_transforms(
         org_id,
         StreamType::Logs,
@@ -107,7 +106,7 @@ pub async fn process(
             value = flatten::flatten(&value)?;
 
             // Start row based transform
-            #[cfg(feature = "zo_functions")]
+
             let mut value = crate::service::ingestion::apply_stream_transform(
                 &local_tans,
                 &value,
@@ -115,7 +114,6 @@ pub async fn process(
                 stream_name,
                 &mut runtime,
             )?;
-            #[cfg(feature = "zo_functions")]
             if value.is_null() || !value.is_object() {
                 stream_status.status.failed += 1; // transform failed or dropped
             }
@@ -171,9 +169,16 @@ pub async fn process(
             timestamp: request.message.publish_time,
         });
     }
-
+    let mut stream_file_name = "".to_string();
     // write to file
-    write_file(buf, thread_id, org_id, stream_name, StreamType::Logs);
+    write_file(
+        buf,
+        thread_id,
+        org_id,
+        stream_name,
+        &mut stream_file_name,
+        StreamType::Logs,
+    );
 
     // only one trigger per request, as it updates etcd
     super::evaluate_trigger(trigger, stream_alerts_map).await;

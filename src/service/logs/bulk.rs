@@ -22,37 +22,25 @@ use std::{
 };
 
 use super::StreamMeta;
-use crate::common::json;
-use crate::common::{flatten, json, time::parse_timestamp_micro_from_value};
+use crate::common::{flatten, time::parse_timestamp_micro_from_value};
 use crate::infra::cluster;
 use crate::infra::config::CONFIG;
-use crate::infra::{cluster, config::CONFIG, metrics};
 use crate::meta::alert::Alert;
-
 use crate::meta::functions::StreamTransform;
-
 use crate::meta::functions::VRLRuntimeConfig;
-use crate::meta::http::HttpResponse as MetaHttpResponse;
+use crate::{common::json, meta::alert::Trigger};
+
 use crate::meta::ingestion::{
     BulkResponse, BulkResponseError, BulkResponseItem, BulkStreamData, RecordStatus,
     StreamSchemaChk,
 };
 use crate::meta::usage::{RequestStats, UsageEvent};
 use crate::meta::StreamType;
-use crate::meta::{
-    alert::{Alert, Trigger},
-    ingestion::{
-        BulkResponse, BulkResponseError, BulkResponseItem, BulkStreamData, RecordStatus,
-        StreamSchemaChk,
-    },
-    StreamType,
-};
+
 use crate::service::db;
 use crate::service::ingestion::write_file;
 use crate::service::schema::stream_schema_exists;
 use crate::service::usage::report_ingest_stats;
-use crate::service::{db, ingestion::write_file, schema::stream_schema_exists};
-use crate::{common::time::parse_timestamp_micro_from_value, meta::alert::Trigger};
 
 pub const TRANSFORM_FAILED: &str = "document_failed_transform";
 pub const TS_PARSE_FAILED: &str = "timestamp_parsing_failed";
@@ -308,6 +296,7 @@ pub async fn ingest(
             thread_id.clone(),
             org_id,
             &stream_name,
+            &mut stream_file_name,
             StreamType::Logs,
         );
         println!(

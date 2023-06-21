@@ -19,12 +19,11 @@ use datafusion::arrow::datatypes::Schema;
 use std::time::Instant;
 
 use super::StreamMeta;
-use crate::common::json;
 use crate::common::time::parse_timestamp_micro_from_value;
+use crate::common::{flatten, json};
 use crate::infra::config::CONFIG;
 use crate::infra::{cluster, metrics};
 use crate::meta::alert::{Alert, Trigger};
-use crate::meta::http::HttpResponse as MetaHttpResponse;
 use crate::meta::ingestion::{IngestionResponse, RecordStatus, StreamStatus};
 use crate::meta::usage::UsageEvent;
 use crate::meta::StreamType;
@@ -182,10 +181,10 @@ pub async fn ingest(
     );
 
     if stream_file_name.is_empty() {
-        return Ok(HttpResponse::Ok().json(IngestionResponse::new(
+        return Ok(IngestionResponse::new(
             http::StatusCode::OK.into(),
             vec![stream_status],
-        )));
+        ));
     }
 
     // only one trigger per request, as it updates etcd
@@ -222,7 +221,7 @@ pub async fn ingest(
     )
     .await;
 
-    Ok(HttpResponse::Ok().json(IngestionResponse::new(
+    Ok(IngestionResponse::new(
         http::StatusCode::OK.into(),
         vec![stream_status],
     ))
