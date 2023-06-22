@@ -18,9 +18,11 @@ use crate::meta::ingestion::GCPIngestionRequest;
 use crate::meta::ingestion::GCPIngestionResponse;
 use crate::meta::ingestion::RecordStatus;
 use crate::meta::ingestion::StreamStatus;
+use crate::meta::usage::UsageEvent;
 use crate::meta::StreamType;
 use crate::service::db;
 use crate::service::ingestion::write_file;
+use crate::service::usage::report_usage_stats;
 
 use super::StreamMeta;
 
@@ -62,7 +64,7 @@ pub async fn process(
 
     // Start Register Transforms for stream
 
-    let (local_tans, stream_vrl_map) = crate::service::ingestion::register_stream_transforms(
+    let (local_trans, stream_vrl_map) = crate::service::ingestion::register_stream_transforms(
         org_id,
         StreamType::Logs,
         stream_name,
@@ -108,7 +110,7 @@ pub async fn process(
             // Start row based transform
 
             let mut value = crate::service::ingestion::apply_stream_transform(
-                &local_tans,
+                &local_trans,
                 &value,
                 &stream_vrl_map,
                 stream_name,
@@ -171,7 +173,7 @@ pub async fn process(
     }
     let mut stream_file_name = "".to_string();
     // write to file
-    write_file(
+    let mut req_stats = write_file(
         buf,
         thread_id,
         org_id,
@@ -201,6 +203,17 @@ pub async fn process(
             StreamType::Logs.to_string().as_str(),
         ])
         .inc();
+
+    req_stats.response_time = start.elapsed().as_secs_f64();
+    //metric + data usage
+    report_usage_stats(
+        req_stats,
+        org_id,
+        StreamType::Logs,
+        UsageEvent::GCPSubscription,
+        local_trans.len() as u16,
+    )
+    .await;
 
     Ok(GCPIngestionResponse {
         request_id: request.message.message_id,

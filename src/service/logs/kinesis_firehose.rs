@@ -23,7 +23,7 @@ use crate::meta::StreamType;
 
 use crate::service::db;
 use crate::service::ingestion::write_file;
-use crate::service::usage::report_ingest_stats;
+use crate::service::usage::report_usage_stats;
 
 use super::StreamMeta;
 
@@ -262,8 +262,8 @@ pub async fn process(
 
     req_stats.response_time = start.elapsed().as_secs_f64();
     //metric + data usage
-    report_ingest_stats(
-        &req_stats,
+    report_usage_stats(
+        req_stats,
         org_id,
         StreamType::Logs,
         UsageEvent::KinesisFirehose,

@@ -40,7 +40,7 @@ use crate::{
         ingestion::{chk_schema_by_record, write_file},
         schema::{set_schema_metadata, stream_schema_exists},
         search as search_service,
-        usage::report_ingest_stats,
+        usage::report_usage_stats,
     },
 };
 
@@ -217,14 +217,14 @@ pub async fn remote_write(
 
             // Start Register Transforms for stream
 
-            let (local_tans, stream_vrl_map) =
+            let (local_trans, stream_vrl_map) =
                 crate::service::ingestion::register_stream_transforms(
                     org_id,
                     StreamType::Metrics,
                     &metric_name,
                 );
 
-            stream_transform_map.insert(metric_name.to_owned(), local_tans.clone());
+            stream_transform_map.insert(metric_name.to_owned(), local_trans.clone());
             // End Register Transforms for stream
 
             let mut value: json::Value = json::to_value(&metric).unwrap();
@@ -232,7 +232,7 @@ pub async fn remote_write(
             // Start row based transform
 
             value = crate::service::ingestion::apply_stream_transform(
-                &local_tans,
+                &local_trans,
                 &value,
                 &stream_vrl_map,
                 &metric_name,
@@ -368,8 +368,8 @@ pub async fn remote_write(
     final_req_stats.response_time += time;
     //metric + data usage
     let fns_length: usize = stream_transform_map.values().map(|v| v.len()).sum();
-    report_ingest_stats(
-        &final_req_stats,
+    report_usage_stats(
+        final_req_stats,
         org_id,
         StreamType::Metrics,
         UsageEvent::Metrics,

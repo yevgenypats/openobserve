@@ -113,10 +113,10 @@ pub async fn get_stream_transforms<'a>(
     if stream_transform_map.contains_key(&key) {
         return;
     }
-    let mut _local_tans: Vec<StreamTransform> = vec![];
-    (_local_tans, *stream_vrl_map) =
+    let mut _local_trans: Vec<StreamTransform> = vec![];
+    (_local_trans, *stream_vrl_map) =
         crate::service::ingestion::register_stream_transforms(org_id, stream_type, stream_name);
-    stream_transform_map.insert(key, _local_tans);
+    stream_transform_map.insert(key, _local_trans);
 }
 
 pub async fn get_stream_partition_keys(
@@ -225,14 +225,14 @@ pub fn register_stream_transforms(
     stream_type: StreamType,
     stream_name: &str,
 ) -> (Vec<StreamTransform>, AHashMap<String, VRLRuntimeConfig>) {
-    let mut local_tans = vec![];
+    let mut local_trans = vec![];
     let mut stream_vrl_map: AHashMap<String, VRLRuntimeConfig> = AHashMap::new();
     let key = format!("{}/{}/{}", &org_id, stream_type, &stream_name);
 
     if let Some(transforms) = STREAM_FUNCTIONS.get(&key) {
-        local_tans = (*transforms.list).to_vec();
-        local_tans.sort_by(|a, b| a.order.cmp(&b.order));
-        for trans in &local_tans {
+        local_trans = (*transforms.list).to_vec();
+        local_trans.sort_by(|a, b| a.order.cmp(&b.order));
+        for trans in &local_trans {
             let func_key = format!("{}/{}", &stream_name, trans.transform.name);
             if let Ok(vrl_runtime_config) = compile_vrl_function(&trans.transform.function, org_id)
             {
@@ -246,18 +246,18 @@ pub fn register_stream_transforms(
         }
     }
 
-    (local_tans, stream_vrl_map)
+    (local_trans, stream_vrl_map)
 }
 
 pub fn apply_stream_transform<'a>(
-    local_tans: &Vec<StreamTransform>,
+    local_trans: &Vec<StreamTransform>,
     value: &'a Value,
     stream_vrl_map: &'a AHashMap<String, VRLRuntimeConfig>,
     stream_name: &str,
     runtime: &mut Runtime,
 ) -> Result<Value, anyhow::Error> {
     let mut value = value.clone();
-    for trans in local_tans {
+    for trans in local_trans {
         let func_key = format!("{stream_name}/{}", trans.transform.name);
         if stream_vrl_map.contains_key(&func_key) && !value.is_null() {
             let vrl_runtime = stream_vrl_map.get(&func_key).unwrap();

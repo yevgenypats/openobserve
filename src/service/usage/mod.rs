@@ -15,8 +15,8 @@ use crate::{
 pub static USAGE_DATA: Lazy<Arc<RwLock<Vec<UsageData>>>> =
     Lazy::new(|| Arc::new(RwLock::new(vec![])));
 
-pub async fn report_ingest_stats(
-    stats: &RequestStats,
+pub async fn report_usage_stats(
+    stats: RequestStats,
     org_id: &str,
     stream_type: StreamType,
     event: UsageEvent,
@@ -30,7 +30,7 @@ pub async fn report_ingest_stats(
     metrics::HTTP_INCOMING_REQUESTS
         .with_label_values(&[&event.to_string(), "200", org_id, "", &local_stream_type])
         .inc();
-
+    let request_body = stats.request_body.unwrap_or("".to_owned());
     let now = Utc::now();
     let mut usage = vec![UsageData {
         event,
@@ -39,7 +39,7 @@ pub async fn report_ingest_stats(
         month: now.month(),
         year: now.year(),
         organization_identifier: org_id.to_owned(),
-        request_body: "".to_owned(),
+        request_body: request_body.to_owned(),
         size: stats.size,
         unit: "MB".to_owned(),
         user_email: "".to_owned(),
@@ -50,13 +50,13 @@ pub async fn report_ingest_stats(
 
     if num_functions > 0 {
         usage.push(UsageData {
-            event,
+            event: UsageEvent::Functions,
             day: now.day(),
             hour: now.hour(),
             month: now.month(),
             year: now.year(),
             organization_identifier: org_id.to_owned(),
-            request_body: "".to_owned(),
+            request_body,
             size: stats.size,
             unit: "MB".to_owned(),
             user_email: "".to_owned(),

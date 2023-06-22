@@ -36,12 +36,16 @@ pub enum UsageEvent {
     SearchAround,
     #[serde(rename = "/_values")]
     SearchTopNValues,
+    #[serde(rename = "functions")]
     Functions,
+    #[serde(rename = "data_retention")]
     Retention,
     #[serde(rename = "/_kinesis_firehose")]
     KinesisFirehose,
+    #[serde(rename = "/gcp/_sub")]
+    GCPSubscription,
     Syslog,
-    EnrichmentTable,
+    EnrichmentTable,    
 }
 
 impl ToString for UsageEvent {
@@ -64,11 +68,13 @@ impl ToString for UsageEvent {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RequestStats {
     pub size: f64,
     pub records: u64,
     pub response_time: f64,
+    #[serde(default)]
+    pub request_body: Option<String>,
 }
 impl Default for RequestStats {
     fn default() -> Self {
@@ -76,6 +82,7 @@ impl Default for RequestStats {
             size: 0.0,
             records: 0,
             response_time: 0.0,
+            request_body: None,
         }
     }
 }

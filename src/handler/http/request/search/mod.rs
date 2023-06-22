@@ -29,7 +29,7 @@ use crate::meta::http::HttpResponse as MetaHttpResponse;
 use crate::meta::usage::{RequestStats, UsageEvent};
 use crate::meta::{self, StreamType};
 use crate::service::search as SearchService;
-use crate::service::usage::report_ingest_stats;
+use crate::service::usage::report_usage_stats;
 
 /** SearchStreamData*/
 #[utoipa::path(
@@ -161,10 +161,11 @@ pub async fn search(
                 records: res.hits.len() as u64,
                 response_time: time,
                 size: res.scan_size as f64,
+                request_body: Some(req.query.sql),
             };
             let num_fn = req.query.query_fn.is_some() as u16;
-            report_ingest_stats(
-                &req_stats,
+            report_usage_stats(
+                req_stats,
                 &org_id,
                 StreamType::Logs,
                 UsageEvent::Search,
@@ -449,10 +450,11 @@ pub async fn around(
         records: resp.hits.len() as u64,
         response_time: time,
         size: resp.scan_size as f64,
+        request_body: Some(req.query.sql),
     };
     let num_fn = req.query.query_fn.is_some() as u16;
-    report_ingest_stats(
-        &req_stats,
+    report_usage_stats(
+        req_stats,
         &org_id,
         StreamType::Logs,
         UsageEvent::SearchAround,
@@ -647,10 +649,11 @@ pub async fn values(
         records: resp.hits.len() as u64,
         response_time: time,
         size: resp.scan_size as f64,
+        request_body: Some(req.query.sql),
     };
     let num_fn = req.query.query_fn.is_some() as u16;
-    report_ingest_stats(
-        &req_stats,
+    report_usage_stats(
+        req_stats,
         &org_id,
         StreamType::Logs,
         UsageEvent::SearchTopNValues,

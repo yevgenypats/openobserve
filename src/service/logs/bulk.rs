@@ -40,7 +40,7 @@ use crate::meta::StreamType;
 use crate::service::db;
 use crate::service::ingestion::write_file;
 use crate::service::schema::stream_schema_exists;
-use crate::service::usage::report_ingest_stats;
+use crate::service::usage::report_usage_stats;
 
 pub const TRANSFORM_FAILED: &str = "document_failed_transform";
 pub const TS_PARSE_FAILED: &str = "timestamp_parsing_failed";
@@ -316,8 +316,8 @@ pub async fn ingest(
     final_req_stats.response_time += time;
     //metric + data usage
     let fns_length: usize = stream_transform_map.values().map(|v| v.len()).sum();
-    report_ingest_stats(
-        &final_req_stats,
+    report_usage_stats(
+        final_req_stats,
         org_id,
         StreamType::Logs,
         UsageEvent::Bulk,
