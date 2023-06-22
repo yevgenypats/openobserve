@@ -45,7 +45,7 @@ pub enum UsageEvent {
     #[serde(rename = "/gcp/_sub")]
     GCPSubscription,
     Syslog,
-    EnrichmentTable,    
+    EnrichmentTable,
 }
 
 impl ToString for UsageEvent {
@@ -64,6 +64,7 @@ impl ToString for UsageEvent {
             UsageEvent::EnrichmentTable => "enrichment_table".to_owned(),
             UsageEvent::SearchAround => "/_around".to_owned(),
             UsageEvent::SearchTopNValues => "/_values".to_owned(),
+            UsageEvent::GCPSubscription => "/gcp/_sub".to_owned(),
         }
     }
 }
