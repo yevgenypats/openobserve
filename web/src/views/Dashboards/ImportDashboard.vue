@@ -88,7 +88,7 @@ export default defineComponent({
       var reader = new FileReader();
       reader.onload = function() {
         try {
-          const data = JSON.parse(reader.result)
+          const data = convertGrafanaToOpenObserve(JSON.parse(reader.result))
 
           dashboardService.create(
             store.state.selectedOrganization.identifier,
@@ -117,6 +117,8 @@ export default defineComponent({
 
           dismiss();
         } catch (error) {
+          console.log(error);
+          
           
           $q.notify({
               type: "negative",
@@ -136,6 +138,83 @@ export default defineComponent({
     const onSubmit = () => {
       // do nothing here
     }
+
+
+    function convertGrafanaToOpenObserve(grafanaJson) {
+  const openObserveJson = {
+    id: "",
+    type: "",
+    fields: {
+      stream: '',
+      stream_type: '',
+      x: [],
+      y: [],
+      filter: []
+    },
+    config: {
+      title: "",
+      description: "",
+      show_legends: true,
+    },
+    queryType: "",
+    query: "",
+    customQuery: false
+  };
+
+  // Set type
+  const panelType = grafanaJson.type;
+  if (panelType === "graph") {
+    openObserveJson.type = "line";
+  } else if (panelType === "singlestat") {
+    openObserveJson.type = "metric";
+  } else {
+    openObserveJson.type = panelType;
+  }
+
+  // Set fields.stream_type based on panelType
+  if (panelType === "logs") {
+    openObserveJson.fields.stream_type = "logs";
+  } else if (panelType === "metrics") {
+    openObserveJson.fields.stream_type = "metrics";
+  } else if (panelType === "traces") {
+    openObserveJson.fields.stream_type = "traces";
+  }
+
+  // Set config.title and config.description
+  openObserveJson.config.title = grafanaJson.title;
+  openObserveJson.config.description = grafanaJson.description;
+
+  // Set config.show_legends
+  openObserveJson.config.show_legends = grafanaJson.legend !== false;
+
+  // Set queryType
+  openObserveJson.queryType = panelType === "metrics" ? "promql" : "sql";
+
+  // Set query
+  openObserveJson.query = grafanaJson.targets[0].rawQuery || "";
+
+  // Set fields.x and fields.y
+  const target = grafanaJson.targets[0];
+  const fields = [...target.fields, ...target.columns];
+  for (const field of fields) {
+    const openObserveField = {
+      label: field.text || "",
+      alias: field.alias || "",
+      column: field.name || "",
+      color: null,
+      aggregationFunction: field.aggregation || ""
+    };
+
+    if (field.type === "number" && field.name !== "Time") {
+      openObserveJson.fields.y.push(openObserveField);
+    } else if (field.type === "string" && field.name !== "Time") {
+      openObserveJson.fields.x.push(openObserveField);
+    }
+  }
+
+  return openObserveJson;
+}
+
 
     return {
       t,
