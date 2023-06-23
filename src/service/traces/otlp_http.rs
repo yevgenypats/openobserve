@@ -40,7 +40,7 @@ use crate::service::{
 
 use crate::common::json::{Map, Value};
 
-use crate::meta::usage::UsageEvent;
+use crate::meta::usage::UsageType;
 use crate::service::usage::report_usage_stats;
 
 const PARENT_SPAN_ID: &str = "reference.parent_span_id";
@@ -380,7 +380,7 @@ pub async fn traces_json(
     );
     req_stats.response_time = start.elapsed().as_secs_f64();
     //metric + data usage
-    report_usage_stats(req_stats, org_id, StreamType::Traces, UsageEvent::Traces, 0).await;
+    report_usage_stats(req_stats, org_id, StreamType::Traces, UsageType::Traces, 0).await;
 
     let schema_exists = stream_schema_exists(
         org_id,

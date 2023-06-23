@@ -18,7 +18,7 @@ use crate::meta::ingestion::KinesisFHIngestionResponse;
 use crate::meta::ingestion::KinesisFHRequest;
 use crate::meta::ingestion::RecordStatus;
 use crate::meta::ingestion::StreamStatus;
-use crate::meta::usage::UsageEvent;
+use crate::meta::usage::UsageType;
 use crate::meta::StreamType;
 
 use crate::service::db;
@@ -266,7 +266,7 @@ pub async fn process(
         req_stats,
         org_id,
         StreamType::Logs,
-        UsageEvent::KinesisFirehose,
+        UsageType::KinesisFirehose,
         local_trans.len() as u16,
     )
     .await;

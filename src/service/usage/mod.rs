@@ -7,7 +7,7 @@ use tokio::sync::RwLock;
 use crate::{
     infra::{config::CONFIG, metrics},
     meta::{
-        usage::{RequestStats, UsageData, UsageEvent},
+        usage::{RequestStats, UsageData, UsageEvent, UsageType},
         StreamType,
     },
 };
@@ -19,7 +19,7 @@ pub async fn report_usage_stats(
     stats: RequestStats,
     org_id: &str,
     stream_type: StreamType,
-    event: UsageEvent,
+    event: UsageType,
     num_functions: u16,
 ) {
     let local_stream_type = stream_type.to_string();
@@ -30,10 +30,10 @@ pub async fn report_usage_stats(
     metrics::HTTP_INCOMING_REQUESTS
         .with_label_values(&[&event.to_string(), "200", org_id, "", &local_stream_type])
         .inc();
-    let request_body = stats.request_body.unwrap_or("".to_owned());
+    let request_body = stats.request_body.unwrap_or(event.to_string());
     let now = Utc::now();
     let mut usage = vec![UsageData {
-        event,
+        event: event.into(),
         day: now.day(),
         hour: now.hour(),
         month: now.month(),

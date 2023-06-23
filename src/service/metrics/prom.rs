@@ -32,7 +32,7 @@ use crate::{
         alert::{Alert, Trigger},
         functions::StreamTransform,
         prom::{self, HASH_LABEL, METADATA_LABEL, NAME_LABEL, VALUE_LABEL},
-        usage::{RequestStats, UsageEvent},
+        usage::{RequestStats, UsageType},
         StreamType,
     },
     service::{
@@ -372,7 +372,7 @@ pub async fn remote_write(
         final_req_stats,
         org_id,
         StreamType::Metrics,
-        UsageEvent::Metrics,
+        UsageType::Metrics,
         fns_length as u16,
     )
     .await;

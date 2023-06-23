@@ -30,7 +30,7 @@ use crate::infra::{
     config::{CONFIG, STREAM_SCHEMAS},
 };
 use crate::meta::{self, http::HttpResponse as MetaHttpResponse, StreamType};
-use crate::{common::json, meta::usage::UsageEvent};
+use crate::{common::json, meta::usage::UsageType};
 
 use super::{
     compact::delete,
@@ -160,7 +160,7 @@ pub async fn save_enrichment_data(
         req_stats,
         org_id,
         StreamType::Logs,
-        UsageEvent::EnrichmentTable,
+        UsageType::EnrichmentTable,
         0,
     )
     .await;

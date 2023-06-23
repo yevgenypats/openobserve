@@ -20,6 +20,35 @@ pub struct UsageData {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum UsageEvent {
+    Ingestion,
+    Search,
+    Functions,
+    Other,
+}
+
+impl From<UsageType> for UsageEvent {
+    fn from(usage: UsageType) -> UsageEvent {
+        match usage {
+            UsageType::Bulk
+            | UsageType::Json
+            | UsageType::Multi
+            | UsageType::Traces
+            | UsageType::Metrics
+            | UsageType::KinesisFirehose
+            | UsageType::GCPSubscription
+            | UsageType::EnrichmentTable
+            | UsageType::Syslog => UsageEvent::Ingestion,
+            UsageType::Search | UsageType::SearchAround | UsageType::SearchTopNValues => {
+                UsageEvent::Search
+            }
+            UsageType::Functions => UsageEvent::Functions,
+            UsageType::Retention => UsageEvent::Other,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub enum UsageType {
     #[serde(rename = "/_bulk")]
     Bulk,
     #[serde(rename = "/_json")]
@@ -48,23 +77,23 @@ pub enum UsageEvent {
     EnrichmentTable,
 }
 
-impl ToString for UsageEvent {
+impl ToString for UsageType {
     fn to_string(&self) -> String {
         match self {
-            UsageEvent::Bulk => "/_bulk".to_owned(),
-            UsageEvent::Json => "/_json".to_owned(),
-            UsageEvent::Multi => "/_multi".to_owned(),
-            UsageEvent::Traces => "/traces".to_owned(),
-            UsageEvent::Metrics => "/v1/write".to_owned(),
-            UsageEvent::Search => "/_search".to_owned(),
-            UsageEvent::Functions => "functions".to_owned(),
-            UsageEvent::Retention => "data_retention".to_owned(),
-            UsageEvent::KinesisFirehose => "_kinesis_firehose".to_owned(),
-            UsageEvent::Syslog => "syslog".to_owned(),
-            UsageEvent::EnrichmentTable => "enrichment_table".to_owned(),
-            UsageEvent::SearchAround => "/_around".to_owned(),
-            UsageEvent::SearchTopNValues => "/_values".to_owned(),
-            UsageEvent::GCPSubscription => "/gcp/_sub".to_owned(),
+            UsageType::Bulk => "/_bulk".to_owned(),
+            UsageType::Json => "/_json".to_owned(),
+            UsageType::Multi => "/_multi".to_owned(),
+            UsageType::Traces => "/traces".to_owned(),
+            UsageType::Metrics => "/v1/write".to_owned(),
+            UsageType::Search => "/_search".to_owned(),
+            UsageType::Functions => "functions".to_owned(),
+            UsageType::Retention => "data_retention".to_owned(),
+            UsageType::KinesisFirehose => "_kinesis_firehose".to_owned(),
+            UsageType::Syslog => "syslog".to_owned(),
+            UsageType::EnrichmentTable => "enrichment_table".to_owned(),
+            UsageType::SearchAround => "/_around".to_owned(),
+            UsageType::SearchTopNValues => "/_values".to_owned(),
+            UsageType::GCPSubscription => "/gcp/_sub".to_owned(),
         }
     }
 }

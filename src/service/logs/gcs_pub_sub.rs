@@ -18,7 +18,7 @@ use crate::meta::ingestion::GCPIngestionRequest;
 use crate::meta::ingestion::GCPIngestionResponse;
 use crate::meta::ingestion::RecordStatus;
 use crate::meta::ingestion::StreamStatus;
-use crate::meta::usage::UsageEvent;
+use crate::meta::usage::UsageType;
 use crate::meta::StreamType;
 use crate::service::db;
 use crate::service::ingestion::write_file;
@@ -210,7 +210,7 @@ pub async fn process(
         req_stats,
         org_id,
         StreamType::Logs,
-        UsageEvent::GCPSubscription,
+        UsageType::GCPSubscription,
         local_trans.len() as u16,
     )
     .await;

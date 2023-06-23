@@ -26,7 +26,7 @@ use crate::common::json;
 use crate::infra::config::CONFIG;
 use crate::infra::{errors, metrics};
 use crate::meta::http::HttpResponse as MetaHttpResponse;
-use crate::meta::usage::{RequestStats, UsageEvent};
+use crate::meta::usage::{RequestStats, UsageType};
 use crate::meta::{self, StreamType};
 use crate::service::search as SearchService;
 use crate::service::usage::report_usage_stats;
@@ -168,7 +168,7 @@ pub async fn search(
                 req_stats,
                 &org_id,
                 StreamType::Logs,
-                UsageEvent::Search,
+                UsageType::Search,
                 num_fn,
             )
             .await;
@@ -457,7 +457,7 @@ pub async fn around(
         req_stats,
         &org_id,
         StreamType::Logs,
-        UsageEvent::SearchAround,
+        UsageType::SearchAround,
         num_fn,
     )
     .await;
@@ -656,7 +656,7 @@ pub async fn values(
         req_stats,
         &org_id,
         StreamType::Logs,
-        UsageEvent::SearchTopNValues,
+        UsageType::SearchTopNValues,
         num_fn,
     )
     .await;

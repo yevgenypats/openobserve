@@ -34,7 +34,7 @@ use crate::meta::ingestion::{
     BulkResponse, BulkResponseError, BulkResponseItem, BulkStreamData, RecordStatus,
     StreamSchemaChk,
 };
-use crate::meta::usage::{RequestStats, UsageEvent};
+use crate::meta::usage::{RequestStats, UsageType};
 use crate::meta::StreamType;
 
 use crate::service::db;
@@ -320,7 +320,7 @@ pub async fn ingest(
         final_req_stats,
         org_id,
         StreamType::Logs,
-        UsageEvent::Bulk,
+        UsageType::Bulk,
         fns_length as u16,
     )
     .await;

@@ -25,7 +25,7 @@ use crate::infra::config::CONFIG;
 use crate::infra::{cluster, metrics};
 use crate::meta::alert::{Alert, Trigger};
 use crate::meta::ingestion::{IngestionResponse, RecordStatus, StreamStatus};
-use crate::meta::usage::UsageEvent;
+use crate::meta::usage::UsageType;
 use crate::meta::StreamType;
 use crate::service::db;
 use crate::service::ingestion::write_file;
@@ -216,7 +216,7 @@ pub async fn ingest(
         req_stats,
         org_id,
         StreamType::Logs,
-        UsageEvent::Json,
+        UsageType::Json,
         local_trans.len() as u16,
     )
     .await;
