@@ -26,7 +26,13 @@
           </div>
         </div>
         <div class="col-auto">
-          <q-btn v-close-popup round flat icon="cancel" />
+          <q-btn
+            v-close-popup
+            round
+            flat
+            icon="cancel"
+            data-test="close-dialog"
+          />
         </div>
       </div>
     </q-card-section>
