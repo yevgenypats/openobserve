@@ -17,10 +17,10 @@
   <div class="column index-menu" :class="store.state.theme == 'dark' ? 'theme-dark' : 'theme-light'">
     <div class="col-auto">
       <q-select v-model="dashboardPanelData.data.fields.stream_type" :label="t('dashboard.selectStreamType')"
-        :options="data.streamType"  data-cy="index-dropdown-stream_type" input-debounce="0" behavior="menu" filled borderless dense
+        :options="data.streamType"  data-test="index-dropdown-stream_type" input-debounce="0" behavior="menu" filled borderless dense
         class="q-mb-xs"></q-select>
       <q-select v-model="dashboardPanelData.data.fields.stream" :label="t('dashboard.selectIndex')"
-        :options="filteredStreams" data-cy="index-dropdown-stream" input-debounce="0" behavior="menu" use-input filled borderless
+        :options="filteredStreams" data-test="index-dropdown-stream" input-debounce="0" behavior="menu" use-input filled borderless
         dense hide-selected fill-input @filter="filterStreamFn">
         <template #no-option>
           <q-item>
@@ -95,7 +95,7 @@
           </q-tr>
         </template>
         <template #top-right>
-          <q-input v-model="dashboardPanelData.meta.stream.filterField" data-cy="index-field-search-input" filled
+          <q-input v-model="dashboardPanelData.meta.stream.filterField" data-test="index-field-search-input" filled
             borderless dense clearable debounce="1" :placeholder="t('search.searchField')">
             <template #prepend>
               <q-icon name="search" />

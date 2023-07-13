@@ -128,20 +128,20 @@
                 dense
                 switch-toggle-side
                 :label="props.row.name"
-                :data-test="`log-search-expand-${props.row.name}-field-btn`"
                 expand-icon-class="field-expansion-icon"
                 expand-icon="
-                  expand_more
+                expand_more
                 "
                 expanded-icon="
-                  expand_less
+                expand_less
                 "
                 @before-show="(event: any) => openFilterCreator(event, props.row)"
-              >
+                >
                 <template v-slot:header>
                   <div
-                    class="flex content-center ellipsis"
-                    :title="props.row.name"
+                  class="flex content-center ellipsis"
+                  :title="props.row.name"
+                  :data-test="`log-search-expand-${props.row.name}-field-btn`"
                   >
                     <div
                       class="field_label ellipsis"
