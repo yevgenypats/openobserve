@@ -815,12 +815,12 @@ export default defineComponent({
             colorbar: {
                 autotic: false,
                 tickprefix: '$',
-                title: 'GDP<br>Billions US$'
+                title: ''
             }
         }];
         const plotRef: any = ref(null);
         var layout = {
-          title: '2014 Global GDP<br>Source: <a href="https://www.cia.gov/library/publications/the-world-factbook/fields/2195.html"> CIA World Factbook</a>',
+          title: '',
           geo:{
               showframe: false,
               showcoastlines: false,
