@@ -19402,7 +19402,7 @@ export default defineComponent({
 
         let data:any = [{
             type: 'scattergeo',
-            locationmode: 'USA-states',
+            locationmode: 'country names',
             lat: cityLat,
             lon: cityLon,
             hoverinfo: 'text',

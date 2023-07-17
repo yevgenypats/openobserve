@@ -780,16 +780,6 @@ export default defineComponent({
             }
             ]
         
-
-        const trace:any = [{
-            type: 'choropleth',
-            locationmode: 'country names',
-            locations: map.map((it: any)=> it.location),
-            z: map.map((it: any)=> it.amount),
-            text: map.map((it: any)=> it.location),
-            autocolorscale: true
-        }]
-        
         const data:any = [{
             type: 'choropleth',
             locationmode: 'country names',
@@ -838,7 +828,6 @@ onMounted(()=>{
         return {
             map,
             plotRef,
-            trace
         }
     }
 })
