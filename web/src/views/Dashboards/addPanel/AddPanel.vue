@@ -64,6 +64,8 @@
                       @variablesData="variablesDataUpdated"/>
                   <div style="flex:1;">
                     <ChartRender :data="chartData" :selectedTimeDate="dashboardPanelData.meta.dateTime" :variablesData="variablesData" :width="6" @error="handleChartApiError"/>
+                    <!-- <GeoMap />
+                    <BubbleMap /> -->
                   </div>
                   <DashboardErrorsComponent :errors="errorData" />
                   <q-separator />
@@ -120,6 +122,8 @@ import DateTimePicker from "../../../components/DateTimePicker.vue";
 import ChartRender from "../../../components/dashboards/addPanel/ChartRender.vue";
 import DashboardErrorsComponent from "../../../components/dashboards/addPanel/DashboardErrors.vue"
 import VariablesValueSelector from "../../../components/dashboards/VariablesValueSelector.vue";
+import GeoMap from "../../../components/dashboards/addPanel/GeoMap.vue";
+import BubbleMap from "../../../components/dashboards/addPanel/BubbleMap.vue";
 
 export default defineComponent({
   name: "AddPanel",
@@ -133,8 +137,10 @@ export default defineComponent({
     DashboardErrorsComponent,
     PanelSidebar,
     ConfigPanel,
-    VariablesValueSelector
-  },
+    VariablesValueSelector,
+    GeoMap,
+    BubbleMap
+},
   setup() {
     // This will be used to copy the chart data to the chart renderer component
     // This will deep copy the data object without reactivity and pass it on to the chart renderer
