@@ -63,9 +63,12 @@
                   <VariablesValueSelector :variablesConfig="currentDashboardData.data?.variables" :selectedTimeDate="dashboardPanelData.meta.dateTime" 
                       @variablesData="variablesDataUpdated"/>
                   <div style="flex:1;">
-                    <ChartRender :data="chartData" :selectedTimeDate="dashboardPanelData.meta.dateTime" :variablesData="variablesData" :width="6" @error="handleChartApiError"/>
-                    <!-- <GeoMap />
-                    <BubbleMap /> -->
+                    <!-- <ChartRender :data="chartData" :selectedTimeDate="dashboardPanelData.meta.dateTime" :variablesData="variablesData" :width="6" @error="handleChartApiError"/> -->
+                    <!-- <GeoMap /> -->
+                    <!-- <BubbleMap /> -->
+                    <!-- <MultiLayersWithoutLib /> -->
+                    <!-- <MultiLayersWithMapBox /> -->
+                    <MapChart :data="convertMapChartData.chart.data" :layout="convertMapChartData.chart.layout" />
                   </div>
                   <DashboardErrorsComponent :errors="errorData" />
                   <q-separator />
@@ -124,6 +127,10 @@ import DashboardErrorsComponent from "../../../components/dashboards/addPanel/Da
 import VariablesValueSelector from "../../../components/dashboards/VariablesValueSelector.vue";
 import GeoMap from "../../../components/dashboards/addPanel/GeoMap.vue";
 import BubbleMap from "../../../components/dashboards/addPanel/BubbleMap.vue";
+import MultiLayersWithoutLib from "../../../components/dashboards/addPanel/MultiLayersWithoutLib.vue";
+import MultiLayersWithMapBox from "../../../components/dashboards/addPanel/MultiLayersWithMapBox.vue";
+import queryService from "../../../services/search"
+import MapChart from "../../../components/dashboards/addPanel/MapChart.vue"
 
 export default defineComponent({
   name: "AddPanel",
@@ -139,7 +146,10 @@ export default defineComponent({
     ConfigPanel,
     VariablesValueSelector,
     GeoMap,
-    BubbleMap
+    BubbleMap,
+    MultiLayersWithoutLib,
+    MultiLayersWithMapBox,
+    MapChart
 },
   setup() {
     // This will be used to copy the chart data to the chart renderer component
@@ -165,12 +175,214 @@ export default defineComponent({
       data: {},
     });
 
+    const mapPanelData:any = reactive({
+      data:{
+        title: '',
+        description: '', 
+        id: '',
+        layers:[
+          {
+            stream_type: 'logs',
+            stream_name: 'map',
+            country: 'country',
+            weight: 'postal',
+            layer_name: 'Heat map',
+            layer_type: 'choropleth'
+          },
+          {
+            stream_type: 'logs',
+            stream_name: 'map',
+            lat: 'lat',
+            lon: 'lon',
+            weight: 'postal',
+            city:'city',
+            layer_name: 'Bubble map',
+            layer_type: 'scattergeo'
+          }
+        ]
+      }
+    })
+
+    const mapResData = reactive({
+      values : [] as any
+    })
+
+    const convertMapChartData = reactive({
+      chart : {
+        data: [],
+        layout:{}
+      }
+    })
+
+    const getMapResData = async() => {
+      if(mapPanelData.data.layers.length){
+        const promise = mapPanelData.data.layers.map((element:any, index:number) => {
+          if(element.layer_type === 'choropleth'){
+            let query = "SELECT "
+              query += `${element.country} as country, count(${element.weight}) as weight FROM ${element.stream_name} GROUP BY country`
+              mapPanelData.data.layers[index].queryData = query
+          } else if(element.layer_type === 'scattergeo'){
+            let query = "SELECT "
+              query += `${element.lat} as lat, ${element.lon} as lon, ${element.city} as city, count(${element.weight}) as weight FROM ${element.stream_name} GROUP BY lat, lon, city`
+              mapPanelData.data.layers[index].queryData = query
+          }
+
+          const query = {
+              query: {
+                  sql: mapPanelData.data.layers[index].queryData,
+                  sql_mode: "full",
+                  start_time: new Date(dashboardPanelData.meta.dateTime.start_time.toISOString()).getTime() * 1000,
+                  end_time: new Date(dashboardPanelData.meta.dateTime.end_time.toISOString()).getTime() * 1000,
+                  size: 0
+              },
+          };
+
+           return queryService
+                    .search({
+                        org_identifier: store.state.selectedOrganization.identifier,
+                        query: query,
+                        page_type: mapPanelData.data.layers[index].stream_type,
+                    })
+                    .then((res: any) => {
+                        // Set searchQueryData.data to the API response hits
+                        return res.data.hits;
+                        // Clear errorDetail
+                       
+                    })
+                    .catch((error) => {
+                        // Process API error for "sql"
+                        console.log(error);
+                        
+                        // processApiError(error, "sql");
+                    })
+                    
+         
+        });
+        mapResData.values = await Promise.all(promise || []);
+        console.log("map resData after promise", mapResData.values);
+        return mapResData.values
+      }
+    }
+
+    const convertQueryData = async() => {
+      const data: any = []
+      mapPanelData.data.layers.map((element:any, index:number) => {
+       
+        let trace = {}
+        if(mapResData.values.length){
+          if(element.layer_type == 'choropleth'){
+            trace = {
+              type: element.layer_type,
+              locationmode: 'country names',
+
+              locations: mapResData.values[index].map((it: any)=> it.country),
+              z: mapResData.values[index].map((it: any)=> it.weight*1000000),
+              text: mapResData.values[index].map((it: any)=> it.country),
+              colorscale: [
+                  [0,'rgb(5, 10, 172)'],[0.35,'rgb(40, 60, 190)'],
+                  [0.5,'rgb(70, 100, 245)'], [0.6,'rgb(90, 120, 245)'],
+                  [0.7,'rgb(106, 137, 247)'],[1,'rgb(220, 220, 220)']],
+              autocolorscale: false,
+              reversescale: true,
+              marker: {
+                  line: {
+                      color: 'rgb(180,180,180)',
+                      width: 0.5
+                  }
+              },
+              tick0: 0,
+              zmin: 0,
+              dtick: 1000,
+              colorbar: {
+                  autotic: false,
+                  tickprefix: '$',
+                  title: '',
+                  y: -.5,
+                  len: 0.5,
+                  orientation : "h"
+              },
+              name: 'Heat map',
+              showlegend: true
+            }
+            data.push(trace)
+          } else if(element.layer_type == 'scattergeo') {
+
+            let cityName = mapResData.values[index].map((it: any) => it.city),
+            cityPop = mapResData.values[index].map((it: any)=> it.weight*100),
+            cityLat = mapResData.values[index].map((it: any)=> it.lat),
+            cityLon = mapResData.values[index].map((it: any)=> it.lon),
+            color = [,"rgb(255,65,54)","rgb(133,20,75)","rgb(255,133,27)","lightgrey"],
+            citySize = [],
+            hoverText = [],
+            scale = 1000;
+
+            for ( var i = 0 ; i < cityPop.length; i++) {
+                var currentSize = cityPop[i] / scale;
+                var currentText = cityName[i] + " res: " + cityPop[i];
+                citySize.push(currentSize);
+                hoverText.push(currentText);
+            }
+
+            trace = {
+              type: element.layer_type,
+              locationmode: 'country names',
+              lat: cityLat,
+              lon: cityLon,
+              hoverinfo: 'text',
+              text: hoverText,
+              marker: {
+                  size: citySize,
+                  line: {
+                      color: 'black',
+                      width: 2
+                  },
+              },
+              name: 'Bubble map',
+              showlegend: true
+            }
+
+            data.push(trace)
+          }
+        }
+      })
+
+      const layout = {
+        title: '',
+        // mapbox: { style: "open-street-map", center: { lat: 38, lon: -90 }, zoom: 3 },
+        geo:{
+            scope: 'world',
+            showframe: false,
+            showcoastlines: false,
+            projection:{
+                type: 'mercator'
+            },
+            showland: true,
+            landcolor: 'rgb(217, 217, 217)',
+            subunitwidth: 1,
+            countrywidth: 1,
+            subunitcolor: 'rgb(255,255,255)',
+            countrycolor: 'rgb(255,255,255)'
+        }
+      };
+
+      console.log("trace=", data);
+      
+      convertMapChartData.chart.data = data
+      convertMapChartData.chart.layout = layout
+      
+    }
+
     onDeactivated(async () => {
       // clear a few things
       resetDashboardPanelData();
     });
 
     onActivated(async () => {
+      // add map data response and convert query data response function
+      await getMapResData()
+      await convertQueryData();
+
+
       errorData.errors = []
 
       // todo check for the edit more
@@ -512,6 +724,7 @@ export default defineComponent({
       variablesDataUpdated,
       currentDashboardData,
       variablesData,
+      convertMapChartData
     };
   },
   methods: {
