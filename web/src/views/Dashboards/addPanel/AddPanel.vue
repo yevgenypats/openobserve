@@ -63,12 +63,12 @@
                   <VariablesValueSelector :variablesConfig="currentDashboardData.data?.variables" :selectedTimeDate="dashboardPanelData.meta.dateTime" 
                       @variablesData="variablesDataUpdated"/>
                   <div style="flex:1;">
-                    <!-- <ChartRender :data="chartData" :selectedTimeDate="dashboardPanelData.meta.dateTime" :variablesData="variablesData" :width="6" @error="handleChartApiError"/> -->
+                    <ChartRender :data="chartData" :selectedTimeDate="dashboardPanelData.meta.dateTime" :variablesData="variablesData" :width="6" @error="handleChartApiError"/>
                     <!-- <GeoMap /> -->
                     <!-- <BubbleMap /> -->
                     <!-- <MultiLayersWithoutLib /> -->
                     <!-- <MultiLayersWithMapBox /> -->
-                    <MapChart :data="convertMapChartData.chart.data" :layout="convertMapChartData.chart.layout" />
+                    <!-- <MapChart :data="convertMapChartData.chart" /> -->
                   </div>
                   <DashboardErrorsComponent :errors="errorData" />
                   <q-separator />
@@ -215,8 +215,8 @@ export default defineComponent({
     })
 
     const getMapResData = async() => {
-      if(mapPanelData.data.layers.length){
-        const promise = mapPanelData.data.layers.map((element:any, index:number) => {
+      if(mapPanelData?.data?.layers.length){
+        const promise = mapPanelData?.data?.layers?.map((element:any, index:number) => {
           if(element.layer_type === 'choropleth'){
 
             let query = `SELECT ${element.country} as country, count(${element.weight}) as weight FROM ${element.stream_name} GROUP BY country`
@@ -265,10 +265,16 @@ export default defineComponent({
 
     const convertQueryData = async(mapResData: any, mapLayerData: any) => {
       const data: any = []
+      console.log("mapLayerData", mapLayerData);
+      
       mapLayerData.map((element:any, index:number) => {
        
         let trace = {}
-        if(mapResData.values.length){
+        console.log("-cc--",JSON.stringify(mapResData.values));
+        
+        // if(mapResData.values.length){
+          console.log("if");
+          
           if(element.layer_type == 'choropleth'){
             trace = {
               type: element.layer_type,
@@ -342,7 +348,7 @@ export default defineComponent({
 
             data.push(trace)
           }
-        }
+        // }
       })
 
       const layout = {

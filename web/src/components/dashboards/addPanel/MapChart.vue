@@ -12,12 +12,8 @@ export default defineComponent({
     name: "MapChart",
     props: {
         data: {
-            type: Array,
-            default: () => []
-        }, 
-        layout : {
             type: Object,
-            default: () => null
+            default: () => {}
         }
     },
 
@@ -25,17 +21,16 @@ export default defineComponent({
         const plotRef: any = ref(null);
 
         onMounted(()=>{
-            Plotly.newPlot(plotRef.value, props.data as any, props.layout, {showLink: false});
-            
+            Plotly.newPlot(plotRef.value, props.data.data as any, props.data.layout, {showLink: false});
         })
 
         watch(
-          () => [props.data, props.layout],
+          () => [props.data],
           async () => {
             Plotly.react(
                       plotRef.value,
-                      props.data as any,
-                      props.layout,
+                      props.data.data as any,
+                      props.data.layout,
                       {
                           responsive: true,
                           displaylogo: false,
