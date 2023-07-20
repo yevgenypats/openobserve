@@ -180,7 +180,7 @@ export default defineComponent({
         title: '',
         description: '', 
         id: '',
-        layers:[
+        layers: [
           {
             stream_type: 'logs',
             stream_name: 'map',
@@ -218,55 +218,54 @@ export default defineComponent({
       if(mapPanelData.data.layers.length){
         const promise = mapPanelData.data.layers.map((element:any, index:number) => {
           if(element.layer_type === 'choropleth'){
-            let query = "SELECT "
-              query += `${element.country} as country, count(${element.weight}) as weight FROM ${element.stream_name} GROUP BY country`
-              mapPanelData.data.layers[index].queryData = query
+
+            let query = `SELECT ${element.country} as country, count(${element.weight}) as weight FROM ${element.stream_name} GROUP BY country`
+            mapPanelData.data.layers[index].queryData = query
           } else if(element.layer_type === 'scattergeo'){
-            let query = "SELECT "
-              query += `${element.lat} as lat, ${element.lon} as lon, ${element.city} as city, count(${element.weight}) as weight FROM ${element.stream_name} GROUP BY lat, lon, city`
-              mapPanelData.data.layers[index].queryData = query
+
+            let query = `SELECT ${element.lat} as lat, ${element.lon} as lon, ${element.city} as city, count(${element.weight}) as weight FROM ${element.stream_name} GROUP BY lat, lon, city`
+            mapPanelData.data.layers[index].queryData = query
           }
 
           const query = {
-              query: {
-                  sql: mapPanelData.data.layers[index].queryData,
-                  sql_mode: "full",
-                  start_time: new Date(dashboardPanelData.meta.dateTime.start_time.toISOString()).getTime() * 1000,
-                  end_time: new Date(dashboardPanelData.meta.dateTime.end_time.toISOString()).getTime() * 1000,
-                  size: 0
-              },
+            query: {
+              sql: mapPanelData.data.layers[index].queryData,
+              sql_mode: "full",
+              start_time: new Date(dashboardPanelData.meta.dateTime.start_time.toISOString()).getTime() * 1000,
+              end_time: new Date(dashboardPanelData.meta.dateTime.end_time.toISOString()).getTime() * 1000,
+              size: 0
+            },
           };
 
-           return queryService
-                    .search({
-                        org_identifier: store.state.selectedOrganization.identifier,
-                        query: query,
-                        page_type: mapPanelData.data.layers[index].stream_type,
-                    })
-                    .then((res: any) => {
-                        // Set searchQueryData.data to the API response hits
-                        return res.data.hits;
-                        // Clear errorDetail
-                       
-                    })
-                    .catch((error) => {
-                        // Process API error for "sql"
-                        console.log(error);
-                        
-                        // processApiError(error, "sql");
-                    })
+          return queryService
+            .search({
+              org_identifier: store.state.selectedOrganization.identifier,
+              query: query,
+              page_type: mapPanelData.data.layers[index].stream_type,
+            })
+            .then((res: any) => {
+              // Set searchQueryData.data to the API response hits
+              return res.data.hits;
+              // Clear errorDetail
+            })
+            .catch((error) => {
+              // Process API error for "sql"
+              console.log(error);
+              // processApiError(error, "sql");
+            })
                     
          
         });
         mapResData.values = await Promise.all(promise || []);
         console.log("map resData after promise", mapResData.values);
+        await convertQueryData(mapResData, mapPanelData.data.layers)
         return mapResData.values
       }
     }
 
-    const convertQueryData = async() => {
+    const convertQueryData = async(mapResData: any, mapLayerData: any) => {
       const data: any = []
-      mapPanelData.data.layers.map((element:any, index:number) => {
+      mapLayerData.map((element:any, index:number) => {
        
         let trace = {}
         if(mapResData.values.length){
@@ -380,8 +379,6 @@ export default defineComponent({
     onActivated(async () => {
       // add map data response and convert query data response function
       await getMapResData()
-      await convertQueryData();
-
 
       errorData.errors = []
 
