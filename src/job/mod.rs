@@ -25,6 +25,7 @@ mod file_list;
 mod files;
 mod metrics;
 mod prom;
+mod stats;
 pub(crate) mod syslog_server;
 mod telemetry;
 
@@ -155,6 +156,7 @@ pub async fn init() -> Result<(), anyhow::Error> {
     //create dynamo db table
     if CONFIG.common.use_dynamo_meta_store {
         crate::common::infra::db::dynamo_db::create_dynamo_tables().await;
+        tokio::task::spawn(async move { stats::run().await });
     }
 
     Ok(())

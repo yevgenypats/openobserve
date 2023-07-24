@@ -492,12 +492,12 @@ async fn write_file_list_dynamo(events: &[FileKey]) -> Result<(), anyhow::Error>
     // set to dynamo db
     // retry 5 times
     for _ in 0..5 {
-        if let Err(e) = db::file_list::dynamo_db::batch_write(&put_items).await {
+        if let Err(e) = crate::service::db::dynamo::file_list::batch_write(&put_items).await {
             log::error!("[COMPACT] batch_write to dynamo db failed, retrying: {}", e);
             tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
             continue;
         }
-        if let Err(e) = db::file_list::dynamo_db::batch_delete(&del_items).await {
+        if let Err(e) = crate::service::db::dynamo::file_list::batch_delete(&del_items).await {
             log::error!(
                 "[COMPACT] batch_delete to dynamo db failed, retrying: {}",
                 e

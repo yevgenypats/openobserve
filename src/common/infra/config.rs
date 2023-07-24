@@ -233,6 +233,8 @@ pub struct Common {
     pub use_dynamo_meta_store: bool,
     #[env_config(name = "ZO_DYNAMO_FILE_LIST_TABLE", default = "")]
     pub dynamo_file_list_table: String,
+    #[env_config(name = "ZO_DYNAMO_STATS_TABLE", default = "")]
+    pub dynamo_stats_table: String,
 }
 
 #[derive(EnvConfig)]
@@ -604,6 +606,7 @@ fn check_s3_config(cfg: &mut Config) -> Result<(), anyhow::Error> {
         std::env::set_var("AWS_EC2_METADATA_DISABLED", "true");
     }
     cfg.common.dynamo_file_list_table = format!("{}-file-list", cfg.s3.bucket_name);
+    cfg.common.dynamo_stats_table = format!("{}-stats", cfg.s3.bucket_name);
     Ok(())
 }
 

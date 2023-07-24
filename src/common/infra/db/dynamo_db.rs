@@ -51,8 +51,12 @@ pub async fn get_dynamo_config() -> aws_config::SdkConfig {
 
 pub async fn create_dynamo_tables() {
     let client = DYNAMO_DB_CLIENT.get().await;
-    let table_name = &CONFIG.common.dynamo_file_list_table;
-    create_file_list_table(client, table_name).await.unwrap();
+    create_file_list_table(client, &CONFIG.common.dynamo_file_list_table)
+        .await
+        .unwrap();
+    create_stats_table(client, &CONFIG.common.dynamo_stats_table)
+        .await
+        .unwrap();
 }
 
 async fn create_file_list_table(
@@ -86,6 +90,39 @@ async fn create_file_list_table(
                 .attribute_type(ScalarAttributeType::S)
                 .build(),
         ];
+        client
+            .create_table()
+            .table_name(table_name)
+            .set_key_schema(Some(key_schema))
+            .set_attribute_definitions(Some(attribute_definitions))
+            .billing_mode(BillingMode::PayPerRequest)
+            .send()
+            .await?;
+
+        log::info!("Table {} created successfully", table_name);
+    }
+    Ok(())
+}
+
+async fn create_stats_table(
+    client: &aws_sdk_dynamodb::Client,
+    table_name: &str,
+) -> Result<(), aws_sdk_dynamodb::Error> {
+    let tables = client.list_tables().send().await?;
+    if !tables
+        .table_names()
+        .unwrap_or(&[])
+        .contains(&table_name.to_string())
+    {
+        log::info!("Table not found, creating table {}", table_name);
+        let key_schema = vec![KeySchemaElement::builder()
+            .attribute_name("stream")
+            .key_type(KeyType::Hash)
+            .build()];
+        let attribute_definitions = vec![AttributeDefinition::builder()
+            .attribute_name("stream")
+            .attribute_type(ScalarAttributeType::S)
+            .build()];
         client
             .create_table()
             .table_name(table_name)

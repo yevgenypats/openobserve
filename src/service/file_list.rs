@@ -32,7 +32,7 @@ pub async fn get_file_list(
     time_max: i64,
 ) -> Result<Vec<FileKey>, anyhow::Error> {
     if CONFIG.common.use_dynamo_meta_store {
-        db::file_list::dynamo_db::get_stream_file_list(
+        crate::service::db::dynamo::file_list::get_stream_file_list(
             org_id,
             stream_name,
             stream_type,
@@ -58,7 +58,7 @@ pub async fn get_file_list(
 #[inline]
 pub async fn get_file_meta(file: &str) -> Result<FileMeta, anyhow::Error> {
     if CONFIG.common.use_dynamo_meta_store {
-        db::file_list::dynamo_db::get_file_meta(file).await
+        crate::service::db::dynamo::file_list::get_file_meta(file).await
     } else {
         file_list::get_file_from_cache(file)
     }
@@ -139,7 +139,7 @@ async fn delete_parquet_file_s3(key: &str, file_list_only: bool) -> Result<(), a
 
 async fn delete_parquet_file_dynamo(key: &str, file_list_only: bool) -> Result<(), anyhow::Error> {
     // delete from file list in dynamo
-    db::file_list::dynamo_db::batch_delete(&[key.to_string()]).await?;
+    crate::service::db::dynamo::file_list::batch_delete(&[key.to_string()]).await?;
 
     // delete the parquet whaterever the file is exists or not
     if !file_list_only {

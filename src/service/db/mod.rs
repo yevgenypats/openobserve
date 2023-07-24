@@ -17,6 +17,7 @@ use crate::common::json;
 pub mod alerts;
 pub mod compact;
 pub mod dashboard;
+pub mod dynamo;
 pub mod enrichment_table;
 pub mod file_list;
 pub mod functions;

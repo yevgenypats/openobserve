@@ -22,7 +22,6 @@ use crate::common::infra::{
 use crate::common::meta::common::FileMeta;
 
 pub mod broadcast;
-pub mod dynamo_db;
 pub mod local;
 pub mod remote;
 
@@ -41,12 +40,12 @@ pub async fn progress(
     let old_data = cache::file_list::get_file_from_cache(key);
     match delete {
         true => {
-            let data = match old_data {
+            /*  let data = match old_data {
                 Ok(meta) => meta,
                 Err(_e) => {
                     return Ok(());
                 }
-            };
+            }; */
             match cache::file_list::del_file_from_cache(key) {
                 Ok(_) => {}
                 Err(e) => {
