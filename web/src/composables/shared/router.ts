@@ -129,43 +129,65 @@ const useRoutes = () => {
       beforeEnter(to: any, from: any, next: any) {
         routeGuardPendingSubscriptions(to, from, next);
       },
+      children: [
+        // {
+        //   path: "dashboards",
+        //   name: "dashboards",
+        //   component: Dashboards,
+        // },
+        {
+          path: "view",
+          name: "viewDashboard",
+          component: ViewDashboard,
+        },
+        {
+          path: "import",
+          name: "importDashboard",
+          component: ImportDashboard,
+        },
+        {
+          path: "add_panel",
+          name: "addPanel",
+          component: AddPanel,
+        },
+      ],
     },
-    {
-      path: "/dashboards/view",
-      name: "viewDashboard",
-      component: ViewDashboard,
-      props: true,
-      meta: {
-        keepAlive: true,
-      },
-      beforeEnter(to: any, from: any, next: any) {
-        routeGuardPendingSubscriptions(to, from, next);
-      }
-    },
-    {
-      path: "/dashboards/import",
-      name: "importDashboard",
-      component: ImportDashboard,
-      props: true,
-      meta: {
-        keepAlive: true,
-      },
-      beforeEnter(to: any, from: any, next: any) {
-        routeGuardPendingSubscriptions(to, from, next);
-      },
-    },
-    {
-      path: "/dashboards/add_panel",
-      name: "addPanel",
-      component: AddPanel,
-      props: true,
-      meta: {
-        keepAlive: true,
-      },
-      beforeEnter(to: any, from: any, next: any) {
-        routeGuardPendingSubscriptions(to, from, next);
-      },
-    },
+    // {
+    //   path: "/dashboards/view",
+    //   name: "viewDashboard",
+    //   component: ViewDashboard,
+    //   props: true,
+    //   meta: {
+    //     keepAlive: true,
+    //   },
+    //   beforeEnter(to: any, from: any, next: any) {
+    //     routeGuardPendingSubscriptions(to, from, next);
+    //   }
+    // },
+    // {
+    //   path: "/dashboards/import",
+    //   name: "importDashboard",
+    //   component: ImportDashboard,
+    //   props: true,
+    //   meta: {
+    //     keepAlive: true,
+    //   },
+    //   beforeEnter(to: any, from: any, next: any) {
+    //     routeGuardPendingSubscriptions(to, from, next);
+    //   },
+    // },
+    // {
+    //   path: "/dashboards/add_panel",
+    //   name: "addPanel",
+    //   component: AddPanel,
+    //   props: true,
+    //   meta: {
+    //     keepAlive: true,
+    //   },
+    //   beforeEnter(to: any, from: any, next: any) {
+    //     routeGuardPendingSubscriptions(to, from, next);
+    //   },
+    // },
     {
       path: "users",
       name: "users",

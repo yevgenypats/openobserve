@@ -300,7 +300,7 @@ export default defineComponent({
 
     const routeToViewD = (row) => {
       return router.push({
-        path: "/dashboards/view",
+        name: "viewDashboard",
         query: { org_identifier: store.state.selectedOrganization.identifier, dashboard: row.identifier },
       });
     };
