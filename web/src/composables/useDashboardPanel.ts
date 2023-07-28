@@ -123,6 +123,7 @@ const useDashboardPanelData = () => {
         return dashboardPanelData.data.fields.y.length >= 1
       case 'area-stacked':
       case 'stacked':
+      case 'heatmap':
       case 'h-stacked':
         return dashboardPanelData.data.fields.y.length >= 1
       default:

@@ -344,6 +344,7 @@ export default defineComponent({
           }
           case 'area-stacked':
           case 'stacked':
+          case 'heatmap':
           case 'h-stacked': {
             if (dashboardData.data.fields.y.length > 1 || dashboardData.data.fields.y.length == 0) {
               errors.push("Add exactly one field on Y-Axis for stacked and h-stacked charts")
@@ -354,7 +355,7 @@ export default defineComponent({
 
             break;
           }
-          default:
+          default:  
             break;
         }
 
