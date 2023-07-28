@@ -34,7 +34,7 @@
           </div>
       </div>
       <div v-else style="height: 100%; position: relative;">
-          <div v-show="!errorDetail" ref="plotRef" :id="chartID" class="plotlycontainer" style="height: 100%"></div>
+          <div v-show="!errorDetail" ref="plotRef" :id="chartID" style="height: 100%"></div>
           <div v-if="!errorDetail" class="noData">{{ noData }}</div>
           <div v-if="errorDetail" class="errorMessage">
             <q-icon size="md" name="warning" />
@@ -1388,7 +1388,10 @@ export default defineComponent({
                     const yaxis: any = {
                         title: props.data.fields?.y?.length == 1 ? props.data.fields.y[0]?.label : "",
                         automargin: true,
-                        fixedrange: true
+                        fixedrange: true,
+                        autosize: true,
+                        width: 700,
+                        height: 700,
                     }
 
                     //show tickvals and ticktext value when the stacked chart hasn't timestamp
@@ -1402,8 +1405,8 @@ export default defineComponent({
                     }
 
                     const layout = {
-                        // xaxis: xaxis,
-                        // yaxis: yaxis
+                        xaxis: xaxis,
+                        yaxis: yaxis
                     }
 
                     return layout
