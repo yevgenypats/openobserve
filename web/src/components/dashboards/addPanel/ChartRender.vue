@@ -863,6 +863,38 @@ export default defineComponent({
               displayModeBar: false,
           });
       };
+        const formatMemorySize = (sizeInBytes:any) => {
+            // console.log("----inside formatMemorySize----",sizeInBytes);
+            
+            const units = ["B", "KB", "MB", "GB", "TB"];
+            for (let unit of units) {
+                // console.log("-unit--", unit);
+                
+                if (sizeInBytes < 1024) {
+                    // console.log(`0--${sizeInBytes.toFixed(0)} ${unit}`);
+                    
+                    return `${sizeInBytes.toFixed(0)} ${unit}`;
+                }
+                sizeInBytes /= 1024;
+            }
+            // console.log("00-",`${sizeInBytes.toFixed(0)} PB`);
+            
+            return `${sizeInBytes.toFixed(0)} PB`;
+        }
+
+        const getUnitValue = (maxValueSize: any) => {
+
+            console.log("-unit--", props.data.config?.unit)
+
+            switch (props.data.config?.unit) {
+                case "bytes":
+                    return formatMemorySize(maxValueSize)
+                // case null:
+                //     return maxValueSize;
+                default:
+                    return maxValueSize;
+            }
+        }
 
       const renderPromQlBasedChart = () => {
 
@@ -879,6 +911,9 @@ export default defineComponent({
                     }
                 })
 
+                const maxValueSize = Math.max(...traces.map((it: any) => Math.max(...it.y)))
+                console.log("---maxValueSize---", maxValueSize);
+                
                 // result = result.map((it: any) => moment(it + "Z").toISOString(true))
 
                 const layout: any = {
@@ -896,6 +931,11 @@ export default defineComponent({
                         r:50,
                         t:50,
                         b:50
+                    },
+                    yaxis: {
+                        tickformat: '.2s',
+                        ticksuffix: props.data.config?.unit == "custom" ? props.data.config.unit_custom : "",
+                        tickformatstops: [{ dtickrange: [null, maxValueSize], value: (value: any) => getUnitValue(value)}],
                     },
                     ...getThemeLayoutOptions()
                 };
