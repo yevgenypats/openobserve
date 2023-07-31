@@ -933,9 +933,13 @@ export default defineComponent({
                         b:50
                     },
                     yaxis: {
-                        tickformat: '.2s',
+                        tickformat: (value:any) => {
+                            console.log("tickformat", getUnitValue(value));
+                            
+                            return getUnitValue(value)
+                        },
                         ticksuffix: props.data.config?.unit == "custom" ? props.data.config.unit_custom : "",
-                        tickformatstops: [{ dtickrange: [null, maxValueSize], value: (value: any) => getUnitValue(value)}],
+                        // tickformatstops: [{ dtickrange: [null, maxValueSize], value: (value: any) => getUnitValue(value)}],
                     },
                     ...getThemeLayoutOptions()
                 };
