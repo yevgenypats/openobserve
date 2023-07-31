@@ -863,36 +863,31 @@ export default defineComponent({
               displayModeBar: false,
           });
       };
-        const formatMemorySize = (sizeInBytes:any) => {
-            // console.log("----inside formatMemorySize----",sizeInBytes);
-            
-            const units = ["B", "KB", "MB", "GB", "TB"];
-            for (let unit of units) {
-                // console.log("-unit--", unit);
-                
-                if (sizeInBytes < 1024) {
-                    // console.log(`0--${sizeInBytes.toFixed(0)} ${unit}`);
-                    
-                    return `${sizeInBytes.toFixed(0)} ${unit}`;
-                }
-                sizeInBytes /= 1024;
-            }
-            // console.log("00-",`${sizeInBytes.toFixed(0)} PB`);
-            
-            return `${sizeInBytes.toFixed(0)} PB`;
-        }
 
-        const getUnitValue = (maxValueSize: any) => {
-
-            console.log("-unit--", props.data.config?.unit)
-
+      
+        /**
+         * Retrieves the unit value for the given value based on the configuration unit.
+         *
+         * @param {any} value - The value to be converted to a unit value.
+         * @return {string} - The converted unit value.
+         */
+        const getUnitValue = (value: any) => {
             switch (props.data.config?.unit) {
-                case "bytes":
-                    return formatMemorySize(maxValueSize)
-                // case null:
-                //     return maxValueSize;
+                case "bytes": {
+                    const units = ["B", "KB", "MB", "GB", "TB"];
+                        for (let unit of units) {
+                            if (value < 1024) {
+                                return `${parseFloat(value).toFixed(2)}${unit}`;
+                            }
+                            value /= 1024;
+                        }
+                        return `${parseFloat(value).toFixed(2)}PB`;
+                }
+                case "custom": {
+                    return `${value}${props.data.config.unit_custom}`
+                }
                 default:
-                    return maxValueSize;
+                    return value;
             }
         }
 
@@ -907,14 +902,35 @@ export default defineComponent({
                         name: getPromqlLegendName(metric.metric, props.data.config.promql_legend),
                         x: values.map((value: any) => (moment(value[0] * 1000).toISOString(true))),
                         y: values.map((value: any) => value[1]),
-                        hovertemplate: "%{x}: %{y:.2f}<br>%{fullData.name}<extra></extra>"
+                        hovertext: values.map((value: any) => getUnitValue(value[1])),
+                        hovertemplate: "%{x}: %{hovertext}<br>%{fullData.name}<extra></extra>"
                     }
                 })
 
-                const maxValueSize = Math.max(...traces.map((it: any) => Math.max(...it.y)))
-                console.log("---maxValueSize---", maxValueSize);
+                // Calculate the maximum value size from the 'y' values in the 'traces' array
+                const maxValueSize = traces.reduce((max: any, it: any) => Math.max(max, Math.max(...it.y)), 0);
                 
-                // result = result.map((it: any) => moment(it + "Z").toISOString(true))
+                // Calculate the minimum value size from the 'y' values in the 'traces' array
+                const minValueSize = traces.reduce((min: any, it: any) => Math.min(min, Math.min(...it.y)), Infinity);
+                
+                // Initialize empty arrays to hold tick values and tick text
+                let yTickVals = [];
+                let yTickText = [];
+                
+                // Calculate the interval size for 5 equally spaced ticks
+                let intervalSize = (maxValueSize - minValueSize) / 4;
+                
+                // If the data doesn't vary much, use a percentage of the max value as the interval size
+                if (intervalSize === 0) {
+                    intervalSize = maxValueSize * 0.2;
+                }
+                
+                // Generate tick values and tick text for the y-axis
+                for (let i = 0; i <= 4; i++) {
+                    let val = minValueSize + intervalSize * i;
+                    yTickVals.push(minValueSize + intervalSize * i);
+                    yTickText.push(getUnitValue(val));
+                }
 
                 const layout: any = {
                     title: false,
@@ -927,19 +943,15 @@ export default defineComponent({
                     },
                     margin: {
                         autoexpand: true,
-                        l:50,
+                        l:100,
                         r:50,
                         t:50,
                         b:50
                     },
                     yaxis: {
-                        tickformat: (value:any) => {
-                            console.log("tickformat", getUnitValue(value));
-                            
-                            return getUnitValue(value)
-                        },
-                        ticksuffix: props.data.config?.unit == "custom" ? props.data.config.unit_custom : "",
-                        // tickformatstops: [{ dtickrange: [null, maxValueSize], value: (value: any) => getUnitValue(value)}],
+                        autorange: true,
+                        tickvals: yTickVals,
+                        ticktext: yTickText,
                     },
                     ...getThemeLayoutOptions()
                 };
