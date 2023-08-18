@@ -455,5 +455,15 @@
     "searchLabel": "Search metric label",
     "add": "Add",
     "cancel": "Cancel"
+  },
+  "roles": {
+    "header": "Roles",
+    "search": "Search Role",
+    "add": "Add Role",
+    "edit": "Edit",
+    "name": "Name",
+    "actions": "Actions",
+    "nameHint": "Role name should be unique across all organizations so it will prefix with organization identifier.",
+    "nameRequired": "Role name is required."
   }
 }

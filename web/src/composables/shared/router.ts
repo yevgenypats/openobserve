@@ -37,6 +37,9 @@ const FunctionList = () => import("@/components/functions/FunctionList.vue");
 const AssociatedStreamFunction = () => import("@/components/functions/AssociatedStreamFunction.vue");
 const EnrichmentTableList = () => import("@/components/functions/EnrichmentTableList.vue");
 
+const RolePage = () => import("@/components/roles/Index.vue");
+const AddRole = () => import("@/components/roles/Add.vue");
+
 import { routeGuardPendingSubscriptions } from "@/utils/zincutils";
 import useIngestionRoutes from "./useIngestionRoutes";
 const useRoutes = () => {
@@ -233,6 +236,25 @@ const useRoutes = () => {
           path: "templates",
           name: "alertTemplates",
           component: TemplateList,
+        },
+      ],
+    },
+    {
+      path: "roles",
+      name: "RolePage",
+      beforeEnter(to: any, from: any, next: any) {
+        routeGuardPendingSubscriptions(to, from, next);
+      },
+      children: [
+        {
+          path: "",
+          name: "RoleList",
+          component: RolePage,
+        },
+        {
+          path: "add",
+          name: "AddRolePage",
+          component: AddRole,
         },
       ],
     },
