@@ -160,6 +160,13 @@ export default defineComponent({
     } else {
       this.VerifyAndCreateUser();
     }
+
+    this.userActivity.setUser();
+    this.userActivity.setUserProperty("email", this.user.email);
+    this.userActivity.setUserProperty(
+      "name",
+      this.user.first_name + " " + this.user.last_name
+    );
   },
   methods: {
     /**
