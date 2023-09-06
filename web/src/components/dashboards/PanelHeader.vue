@@ -21,7 +21,7 @@
         {{ renderTitle }}
     </div>
       <q-space />
-      <q-btn-dropdown dense flat label="" no-caps >
+      <q-btn-dropdown dense flat label="" no-caps v-if="showOption">
         <q-list dense>
           <q-item clickable v-close-popup @click="onPanelModifyClick('EditPanel')">
             <q-item-section>
@@ -45,7 +45,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, onMounted } from "vue";
 import { toRaw } from 'vue';
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
@@ -53,7 +53,7 @@ import { useQuasar} from "quasar";
 
 export default defineComponent({
   name: "PanelHeader",
-  props: ["panelDataElement", "dashboardId", "draggable"],
+  props: ["panelDataElement", "dashboardId", "draggable","showOption"],
   panelData: [],
 
   setup(props, { emit }) {

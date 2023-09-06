@@ -21,7 +21,8 @@
         :dashboardId="$route.query.dashboard"
         @clicked="onClickChild"
         @duplicatePanel="duplicatePanel"
-        :draggable="props.draggable"
+        :draggable="draggable"
+        :showOption="showOption"
       />
     </div>
     <PanelSchemaRenderer
@@ -42,7 +43,7 @@ import PanelSchemaRenderer from "./PanelSchemaRenderer.vue";
 export default defineComponent({
   name: "PanelContainer",
   emits: ["updated:chart", "duplicatePanel"],
-  props: ["data", "selectedTimeDate", "draggable","width", "height", "variablesData"],
+  props: ["data", "selectedTimeDate", "draggable","width", "height", "variablesData","showOption"],
   components: {
     PanelHeader,
     PanelSchemaRenderer

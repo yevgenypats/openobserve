@@ -41,7 +41,7 @@
       </div>
     </div>
     <q-separator></q-separator>
-    <VariablesValueSelector :variablesConfig="currentDashboardData.data?.variables" :selectedTimeDate="currentTimeObj" 
+    <!-- <VariablesValueSelector :variablesConfig="currentDashboardData.data?.variables" :selectedTimeDate="currentTimeObj" 
       @variablesData="variablesDataUpdated"/>
     <div class="displayDiv">
       <grid-layout v-if="currentDashboardData.data.panels?.length > 0" :layout.sync="getDashboardLayout(currentDashboardData.data)" :col-num="12" :row-height="30"
@@ -61,10 +61,11 @@
         </grid-item>
       </grid-layout>
     </div>
-    <div v-if="!currentDashboardData.data.panels?.length">
+    <div v-if="!currentDashboardData.data.panels?.length"> -->
      <!-- if data not available show nodata component -->
-      <NoPanel @update:Panel="addPanelData" />
-    </div>
+      <!-- <NoPanel @update:Panel="addPanelData" /> -->
+    <!-- </div> -->
+    <RenderDashboardCharts :draggable="draggable" :dashboard="currentDashboardData"/>
     <q-dialog
       v-model="showDashboardSettingsDialog"
       position="right"
@@ -82,17 +83,14 @@
 import {
   defineComponent,
   ref,
-  computed,
   watch,
-  onMounted,
   onActivated,
   nextTick,
 } from "vue";
 import { useStore } from "vuex";
-import { useQuasar, date, copyToClipboard } from "quasar";
+import { useQuasar } from "quasar";
 import { useI18n } from "vue-i18n";
 import DateTimePicker from "../../components/DateTimePicker.vue";
-import VueGridLayout from "vue3-grid-layout";
 import { useRouter } from "vue-router";
 import {
   getConsumableDateTime,
@@ -101,28 +99,23 @@ import {
 } from "../../utils/commons.ts";
 import { parseDuration, generateDurationLabel, getDurationObjectFromParams, getQueryParamsForDuration } from "../../utils/date"
 import { toRaw, unref, reactive } from "vue";
-import PanelContainer from "../../components/dashboards/PanelContainer.vue";
 import { useRoute } from "vue-router";
 import { deletePanel, updateDashboard } from "../../utils/commons";
-import NoPanel from "../../components/shared/grid/NoPanel.vue";
 import AutoRefreshInterval from "../../components/AutoRefreshInterval.vue"
 import ExportDashboard from "../../components/dashboards/ExportDashboard.vue"
 import DashboardSettings from "./DashboardSettings.vue";
 import VariablesValueSelector from "../../components/dashboards/VariablesValueSelector.vue";
-import { convertDashboardSchemaVersion } from "@/utils/dashboard/convertDashboardSchemaVersion";
+import RenderDashboardCharts from "./RenderDashboardCharts.vue";
 
 export default defineComponent({
   name: "ViewDashboard",
   components: {
-    GridLayout: VueGridLayout.GridLayout,
-    GridItem: VueGridLayout.GridItem,
     DateTimePicker,
-    PanelContainer,
-    NoPanel,
     AutoRefreshInterval,
     ExportDashboard,
     DashboardSettings,
-    VariablesValueSelector
+    VariablesValueSelector,
+    RenderDashboardCharts
 },
   setup() {
     const { t } = useI18n();
@@ -159,7 +152,7 @@ export default defineComponent({
         store,
         route.query.dashboard
       )))
-      currentDashboardData.data = data;
+      currentDashboardData.data = data;      
 
       // if variables data is null, set it to empty list
       if(!(currentDashboardData.data?.variables && currentDashboardData.data?.variables?.list.length)) {
