@@ -16,13 +16,13 @@
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <!-- eslint-disable vue/attribute-hyphenation -->
 <template>
-      <VariablesValueSelector :variablesConfig="dashboard?.variables" :selectedTimeDate="currentTimeObj" 
+      <VariablesValueSelector :variablesConfig="dashboardData?.variables" :selectedTimeDate="currentTimeObj" 
         @variablesData="variablesDataUpdated"/>
       <div class="displayDiv">
-        <grid-layout v-if="dashboard.panels?.length > 0" :layout.sync="getDashboardLayout(dashboard)" :col-num="12" :row-height="30"
+        <grid-layout v-if="dashboardData.panels?.length > 0" :layout.sync="getDashboardLayout(dashboardData)" :col-num="12" :row-height="30"
           :is-draggable="draggable" :is-resizable="draggable" :vertical-compact="true" :autoSize="true"
           :restore-on-drag="true" :use-css-transforms="false">
-          <grid-item class="plotlyBackground" v-for="item in dashboard.panels" :key="item.id"
+          <grid-item class="plotlyBackground" v-for="item in dashboardData.panels" :key="item.id"
             :x="getPanelLayout(item,'x')" :y="getPanelLayout(item,'y')"
             :w="getPanelLayout(item,'w')" :h="getPanelLayout(item,'h')"
             :i="getPanelLayout(item,'i')" :minH="getMinimumHeight(item.type)" :minW="getMinimumWidth(item.type)" @resized="resizedEvent" @moved="movedEvent"
@@ -36,7 +36,7 @@
           </grid-item>
         </grid-layout>
       </div>
-      <div v-if="!dashboard.panels?.length">
+      <div v-if="!dashboardData.panels?.length">
        <!-- if data not available show nodata component -->
         <NoPanel @update:Panel="addPanelData" />
       </div>
@@ -59,11 +59,8 @@ onUnmounted,
   import VueGridLayout from "vue3-grid-layout";
   import { useRouter } from "vue-router";
   import {
-    getConsumableDateTime,
-    getDashboard,
     addPanel
   } from "../../utils/commons.ts";
-  import { parseDuration, generateDurationLabel, getDurationObjectFromParams, getQueryParamsForDuration } from "../../utils/date"
   import { toRaw, unref, reactive } from "vue";
   import PanelContainer from "../../components/dashboards/PanelContainer.vue";
   import { useRoute } from "vue-router";
@@ -73,7 +70,7 @@ onUnmounted,
   
   export default defineComponent({
     name: "RenderDashboardCharts",
-    props:["draggable","dashboard"],
+    props:["draggable","dashboardData","currentTimeObj"],
     components: {
       GridLayout: VueGridLayout.GridLayout,
       GridItem: VueGridLayout.GridItem,
@@ -91,7 +88,7 @@ onUnmounted,
       });
       const $q = useQuasar();
       const currentDurationSelectionObj = ref ({})
-      const currentTimeObj = ref({});
+      // const currentTimeObj = ref({});
       const refreshInterval = ref(0);
       const selectedDate = ref()
   
@@ -140,7 +137,7 @@ onUnmounted,
         
   
         // if variables data is null, set it to empty list
-        if(!(props.dashboard?.variables && props.dashboard?.variables?.list.length)) {
+        if(!(props.dashboardData?.variables && props.dashboardData?.variables?.list.length)) {
           variablesData.isVariablesLoading = false
           variablesData.values = []
         }
@@ -333,7 +330,6 @@ onUnmounted,
         addPanelData,
         onDuplicatePanel,
         t,
-        currentTimeObj,
         onUpdatePanel,
         movedEvent,
         resizedEvent,

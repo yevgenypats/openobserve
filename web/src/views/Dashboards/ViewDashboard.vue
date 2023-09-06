@@ -65,7 +65,7 @@
      <!-- if data not available show nodata component -->
       <!-- <NoPanel @update:Panel="addPanelData" /> -->
     <!-- </div> -->
-    <RenderDashboardCharts :draggable="draggable" :dashboard="currentDashboardData"/>
+    <RenderDashboardCharts :draggable="draggable" :dashboardData="currentDashboardData.data" :currentTimeObj="currentTimeObj" />
     <q-dialog
       v-model="showDashboardSettingsDialog"
       position="right"
