@@ -28,7 +28,7 @@
             :i="getPanelLayout(item,'i')" :minH="getMinimumHeight(item.type)" :minW="getMinimumWidth(item.type)" @resized="resizedEvent" @moved="movedEvent"
             drag-allow-from=".drag-allow">
             <div style="height: 100%;">
-              <PanelContainer @updated:chart="onUpdatePanel" @duplicatePanel="onDuplicatePanel" :showOption="draggable" :draggable="draggable" :data="item"
+              <PanelContainer @onDeletePanel="OnDeletePanel" :showOption="draggable" :draggable="draggable" :data="item" :dashboardId="dashboardData.id"
                 :selectedTimeDate="currentTimeObj" :variablesData="variablesData"
                 :width="getPanelLayout(item,'w')" :height="getPanelLayout(item,'h')">
               </PanelContainer>
@@ -47,29 +47,22 @@
   import {
     defineComponent,
     ref,
-    watch,
-    onActivated,
-    nextTick,
-onMounted,
-onUnmounted,
   } from "vue";
   import { useStore } from "vuex";
   import { useQuasar } from "quasar";
   import { useI18n } from "vue-i18n";
   import VueGridLayout from "vue3-grid-layout";
   import { useRouter } from "vue-router";
-  import {
-    addPanel
-  } from "../../utils/commons.ts";
-  import { toRaw, unref, reactive } from "vue";
+  import { reactive } from "vue";
   import PanelContainer from "../../components/dashboards/PanelContainer.vue";
   import { useRoute } from "vue-router";
-  import { deletePanel, updateDashboard } from "../../utils/commons";
+  import { updateDashboard } from "../../utils/commons";
   import NoPanel from "../../components/shared/grid/NoPanel.vue";
   import VariablesValueSelector from "../../components/dashboards/VariablesValueSelector.vue";
   
   export default defineComponent({
     name: "RenderDashboardCharts",
+    emits:["onDeletePanel"],
     props:["draggable","dashboardData","currentTimeObj"],
     components: {
       GridLayout: VueGridLayout.GridLayout,
@@ -83,14 +76,7 @@ onUnmounted,
       const route = useRoute();
       const router = useRouter();
       const store = useStore();
-      const currentDashboardData = reactive({
-        data: {},
-      });
       const $q = useQuasar();
-      const currentDurationSelectionObj = ref ({})
-      // const currentTimeObj = ref({});
-      const refreshInterval = ref(0);
-      const selectedDate = ref()
   
       // variables data
       const variablesData = reactive({});
@@ -98,106 +84,13 @@ onUnmounted,
         Object.assign(variablesData,data)
       }
   
-      // onActivated(async () => {        
-      //   await loadDashboard();        
-      // })
-
-
-      // console.log("props",props);
-      
-
-      onMounted(()=>{
-        console.log("mounted");
-        // console.log(props);
-      })
-
-      onActivated(async()=>{
-        console.log("activated");
-        await nextTick();
-        console.log("props",props);
-      })
-
-      // watch(()=>props,()=>{
-      //   console.log("watch");
-      // },{deep:true})
-
-      onUnmounted(()=>{
-        console.log("unmounted");
-      })
-
-      const loadDashboard = async () => {
-        
-        // let data = JSON.parse(JSON.stringify(await getDashboard(
-        //   store,
-        //   route.query.dashboard
-        // )))
-        // currentDashboardData.data = data;
-
-        // console.log(props);
-        
-  
-        // if variables data is null, set it to empty list
-        if(!(props.dashboardData?.variables && props.dashboardData?.variables?.list.length)) {
-          variablesData.isVariablesLoading = false
-          variablesData.values = []
-        }
-       
-      };
-      //create a duplicate panel
-      const onDuplicatePanel = async (data: any): Promise<void> => {
-  
-        // Show a loading spinner notification.
-        const dismiss = $q.notify({
-          spinner: true,
-          message: "Please wait...",
-          timeout: 2000,
-        });
-  
-        // Generate a unique panel ID.
-        const panelId = "Panel_ID" + Math.floor(Math.random() * (99999 - 10 + 1)) + 10;
-  
-        // Duplicate the panel data with the new ID.
-        const panelData = JSON.parse(JSON.stringify(data));
-        panelData.id = panelId;
-  
-        try {
-          // Add the duplicated panel to the dashboard.
-          await addPanel(store, route.query.dashboard, panelData);
-  
-          // Show a success notification.
-          $q.notify({
-            type: "positive",
-            message: `Panel Duplicated Successfully`,
-          });
-  
-          // Navigate to the new panel.
-          return router.push({
-            path: "/dashboards/add_panel",
-            query: { dashboard: String(route.query.dashboard), panelId: panelId }
-          });
-        } catch (err) {
-          // Show an error notification.
-          $q.notify({
-            type: "negative",
-            message: err?.response?.data["error"]
-              ? JSON.stringify(err?.response?.data["error"])
-              : 'Panel duplication failed',
-          });
-        }
-  
-        // Hide the loading spinner notification.
-        dismiss();
-  
-      };
-  
       // save the dashboard value
-      const saveDashboard = async () => {
-        const dashboardId = route.query.dashboard
+      const saveDashboard = async () => {        
         await updateDashboard(
           store,
           store.state.selectedOrganization.identifier,
-          dashboardId,
-          currentDashboardData.data
+          props.dashboardData.dashboardId,
+          props.dashboardData
         );
   
         $q.notify({
@@ -215,52 +108,6 @@ onUnmounted,
           query: { dashboard: route.query.dashboard },
         });
       };
-      
-      // watch(selectedDate, () => {
-      //   const c = toRaw(unref(selectedDate.value));
-      //   currentDurationSelectionObj.value = selectedDate.value
-      //   currentTimeObj.value = getConsumableDateTime(currentDurationSelectionObj.value);
-      // })
-  
-      // ------- work with query params ----------
-      // onActivated(async() => {
-      //   const params = route.query
-  
-      //   if(params.refresh) {
-      //     refreshInterval.value = parseDuration(params.refresh)
-      //   }
-  
-      //   if(params.period || (params.to && params.from)){
-      //     selectedDate.value = getDurationObjectFromParams(params)
-      //   }
-  
-      //   // resize charts if needed
-      //   await nextTick();
-      //   window.dispatchEvent(new Event("resize"))
-      // })
-  
-      // whenever the refreshInterval is changed, update the query params
-      // watch([refreshInterval, selectedDate], () => {
-      //   router.replace({
-      //     query: {
-      //       org_identifier: store.state.selectedOrganization.identifier,
-      //       dashboard: route.query.dashboard,
-      //       refresh: generateDurationLabel(refreshInterval.value),
-      //       ...getQueryParamsForDuration(selectedDate.value)
-      //     }
-      //   })
-      // })
-  
-  
-      const onUpdatePanel = async(panelDataElementValue: any) => {
-        
-        await deletePanel(
-          store,
-          route.query.dashboard,
-          panelDataElementValue.id
-        );
-        await loadDashboard()
-      }
   
       const movedEvent = (i, newX, newY) => {
         saveDashboard()
@@ -271,22 +118,22 @@ onUnmounted,
         saveDashboard()
       }
   
-      const getDashboardLayout = (currentDashboardData)=>{
+      const getDashboardLayout = (dashboardData)=>{
         //map on each panels and return array of layouts
-        return currentDashboardData.panels?.map((item) => item.layout)||[];
+        return dashboardData.panels?.map((item) => item.layout)||[];
       }
   
-      const getPanelLayout = (currentDashboardData, position) => {      
+      const getPanelLayout = (panelData, position) => {      
             if (position == "x") {
-              return currentDashboardData.layout?.x;
+              return panelData.layout?.x;
             } else if (position == "y") {
-              return currentDashboardData?.layout?.y;
+              return panelData?.layout?.y;
             } else if (position == "w") {
-              return currentDashboardData?.layout?.w;
+              return panelData?.layout?.w;
             } else if (position == "h") {
-              return currentDashboardData?.layout?.h;
+              return panelData?.layout?.h;
             } else if (position == "i") {
-              return currentDashboardData?.layout?.i;
+              return panelData?.layout?.i;
             }
         return 0;
       }
@@ -326,11 +173,8 @@ onUnmounted,
       }
   
       return {
-        currentDashboardData,
         addPanelData,
-        onDuplicatePanel,
         t,
-        onUpdatePanel,
         movedEvent,
         resizedEvent,
         getPanelLayout,
@@ -340,6 +184,11 @@ onUnmounted,
         variablesDataUpdated,
         getDashboardLayout
       };
+    },
+    methods:{
+      OnDeletePanel(panelId){
+        this.$emit('onDeletePanel',panelId)
+      }
     }
   });
   </script>
@@ -350,10 +199,6 @@ onUnmounted,
       border-bottom: 1px solid $border-color;
       justify-content: flex-end;
     }
-  }
-  
-  .vue-grid-layout {
-    // background: #eee;
   }
   
   .vue-grid-layout {
