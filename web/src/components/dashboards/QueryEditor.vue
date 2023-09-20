@@ -280,6 +280,21 @@ export default defineComponent({
       });
     });
 
+    onActivated(() => {
+      editorObj.createContextKey("ctrlenter", true);
+      editorObj.addCommand(
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+        function () {
+            emit("run-query");
+        },
+        "ctrlenter"
+      );
+    });
+
+    onDeactivated(() => {
+      editorObj.removeCommand("ctrlenter");
+    });
+
     onUnmounted(() => {
       provider.value?.dispose();
     });

@@ -103,7 +103,7 @@
                   </template>
                   <template #after>
                     <div style="height: 100%; width: 100%;" class="row column">
-                      <DashboardQueryEditor @searchdata="runQuery"/>
+                      <DashboardQueryEditor/>
                     </div>
                   </template>
                 </q-splitter>
