@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "devcloud": "NODE_ENV=devcloud vite --mode=devcloud",
-    "build-alpha1": "run-p type-check build-only-alpha1",
+    "build-alpha1": "NODE_OPTIONS='--max-old-space-size=8192' run-p type-check build-only-alpha1",
     "build-cloud-prod": "run-p type-check build-only-cloud-prod",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' run-p type-check build-only",
     "postbuild": "run-p copy",
