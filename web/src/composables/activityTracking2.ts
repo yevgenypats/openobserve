@@ -29,7 +29,7 @@ const userActivityTracking = () => {
       // Specify a version number to identify the deployed version of your application in Datadog
       // version: '1.0.0',
       // forwardErrorsToLogs: true,
-      forwardConsoleLogs: "all",
+      // forwardConsoleLogs: "all",
       insecureHTTP: true,
       apiVersion: "v1",
       sessionSampleRate: 100,
