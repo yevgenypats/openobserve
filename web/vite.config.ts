@@ -25,6 +25,7 @@ import dotenv from "dotenv";
 import fs from "fs-extra";
 import monacoEditorPlugin from "vite-plugin-monaco-editor";
 import visualizer from "rollup-plugin-visualizer";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 // Load environment variables from the appropriate .env file
 if (process.env.NODE_ENV === "production") {
@@ -108,6 +109,11 @@ export default defineConfig({
       customDistPath: () => path.resolve(__dirname, "dist", "monacoeditorwork"),
     }),
     isTesting && monacoEditorTestResolver(),
+    sentryVitePlugin({
+      org: "zinc-labs-inc-17",
+      project: "ziox-console-dev",
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }),
   ].filter(Boolean),
   resolve: {
     alias: {
