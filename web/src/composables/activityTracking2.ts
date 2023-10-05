@@ -31,11 +31,11 @@ const userActivityTracking = () => {
       // forwardErrorsToLogs: true,
       // forwardConsoleLogs: "all",
       // insecureHTTP: true,
-      apiVersion: "v1",
-      sessionSampleRate: 100,
-      premiumSampleRate: 100,
-      trackUserInteractions: true,
-      defaultPrivacyLevel: "mask-user-input",
+      // apiVersion: "v1",
+      // sessionSampleRate: 100,
+      // premiumSampleRate: 100,
+      // trackUserInteractions: true,
+      // defaultPrivacyLevel: "mask-user-input",
     });
 
     openobserveRum.startSessionReplayRecording();
