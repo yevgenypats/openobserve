@@ -35,7 +35,7 @@ const userActivityTracking = () => {
       forwardErrorsToLogs: true,
       forwardConsoleLogs: "all",
       organizationIdentifier: "myorg",
-      insecureHTTP: true,
+      insecureHTTP: false,
       apiVersion: "v1",
     });
 
