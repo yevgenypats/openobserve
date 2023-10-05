@@ -30,7 +30,7 @@ const userActivityTracking = () => {
       // version: '1.0.0',
       // forwardErrorsToLogs: true,
       // forwardConsoleLogs: "all",
-      insecureHTTP: true,
+      // insecureHTTP: true,
       apiVersion: "v1",
       sessionSampleRate: 100,
       premiumSampleRate: 100,
