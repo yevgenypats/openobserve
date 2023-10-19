@@ -22,8 +22,8 @@ const userActivityTracking = () => {
   const store = useStore();
   const initializeTracking = () => {
     datadogRum.init({
-      applicationId: "d2017c95-c1dd-4ad0-851b-db25947f406e",
-      clientToken: "pube705971a05eed4d79c5f2e2362837397",
+      applicationId: "04d3b6de-51c1-49d5-a693-504293e3d36f",
+      clientToken: "pub7021787ca082769936566dbefdd0d13c",
       site: "us5.datadoghq.com",
       service: "openobserve",
       env: config.environment,
@@ -36,7 +36,7 @@ const userActivityTracking = () => {
     });
 
     datadogLogs.init({
-      clientToken: "pube705971a05eed4d79c5f2e2362837397",
+      clientToken: "pub7021787ca082769936566dbefdd0d13c",
       site: "us5.datadoghq.com",
       forwardErrorsToLogs: true,
       sessionSampleRate: 100,
