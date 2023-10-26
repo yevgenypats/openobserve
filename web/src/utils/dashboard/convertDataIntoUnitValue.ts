@@ -201,7 +201,7 @@ export const getUnitValue = (value: any, unit: string, customUnit: string) => {
       }
       default: {        
         return {
-          value: isNaN(value)
+          value: (!value) || isNaN(value)
             ? value
             : Number.isInteger(value)
             ? value

@@ -24,7 +24,7 @@
     v-else-if="panelSchema.type == 'table'"
     :data="panelData.chartType == 'table'? panelData: {options: {}}"
     />
-    <ChartRenderer v-else :data="panelSchema.queryType === 'promql' || (data.length && data[0].length  && panelData.chartType != 'geomap' && panelData.chartType != 'table') ? panelData : {options:{}}" />
+    <ChartRenderer v-else :data="panelSchema.queryType === 'promql' || (data?.length && data[0]?.length  && panelData.chartType != 'geomap' && panelData.chartType != 'table') ? panelData : {options:{}}" />
     </div>
     <div v-if="!errorDetail" class="noData">{{ noData }}</div>
     <div v-if="errorDetail" class="errorMessage">
