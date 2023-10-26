@@ -66,8 +66,7 @@ export const convertSQLData = (
   const getAxisDataFromKey = (key: string) => {
     const data = searchQueryData[0].filter((item: any) => {
       return (
-        xAxisKeys.every((key: any) => item[key] != null) &&
-        yAxisKeys.every((key: any) => item[key] != null)
+        xAxisKeys.every((key: any) => item[key] != null)
       );
     });
 
@@ -971,22 +970,19 @@ export const convertSQLData = (
 
     //if x axis has time series
     if (field) {
-      // if timezone is UTC then simply return x axis value which will be in UTC (note that need to remove Z from timezone string)
-      // else check if xaxis value is interger(ie time will be in milliseconds)
-      // if yes then return to convert into other timezone
-      // if no then create new datetime object and get in milliseconds using getTime method
+      // create series with 2D array where each inner array is [timestamp, value]
       options.series.map((seriesObj: any) => {
         seriesObj.data = seriesObj.data.map((it: any, index: any) => [
-          store.state.timezone != "UTC"
-            ? utcToZonedTime(
-                Number.isInteger(options.xAxis[0].data[index])
-                  ? options.xAxis[0].data[index]
-                  : new Date(options.xAxis[0].data[index]).getTime(),
-                store.state.timezone
-              )
-            : new Date(options.xAxis[0].data[index]).toISOString().slice(0, -1),
+          // if timestamp is integer (ie. it will be milliseconds) then simply use it
+          // else convert it to milliseconds
+          Number.isInteger(options.xAxis[0].data[index]) ? options.xAxis[0].data[index] : new Date(options.xAxis[0].data[index]).getTime(),
           it,
         ]);
+        // find missing timestamps
+        // value for missing timestamp will be null
+        seriesObj.data = findMissingTimestamps(seriesObj.data);
+        // convert timestamp into ZonedTime
+        seriesObj.data = convertDateFromMillisecondsToZonedTime(seriesObj.data, store.state.timezone);        
       });
       options.xAxis[0].type = "time";
       options.xAxis[0].data = [];
@@ -1190,6 +1186,64 @@ const isTimeSeries = (sample: any) =>{
   return sample.every((value: any) => {
     return iso8601Pattern.test(value);
   });
+}
+
+// calculate interval for histogram data
+const calculateTimeseriesInterval = (start_time: any, end_time: any) => {  
+  let intervalInMS = 10 * 1000; // 10 seconds
+  if (end_time - start_time >= 1000 * 60 * 30) {
+    intervalInMS = 15 * 1000; //"15 second"
+  }
+  if (end_time - start_time >= 1000 * 60 * 60) {
+    intervalInMS = 30 * 1000 //"30 second"
+  }
+  if (end_time - start_time >= 1000 * 3600 * 2) {
+    intervalInMS = 1 * 60 * 1000 //"1 minute"
+  }
+  if (end_time - start_time >= 1000 * 3600 * 6) {
+    intervalInMS = 5 * 60 * 1000 //"5 minute"
+  }
+  if (end_time - start_time >= 1000 * 3600 * 24) {
+    intervalInMS = 30 * 60 * 1000 //"30 minute"
+  }
+  if (end_time - start_time >= 1000 * 86400 * 7) {
+    intervalInMS = 60 * 60 * 1000 //"1 hour"
+  }
+  if (end_time - start_time >= 1000 * 86400 * 30) {
+    intervalInMS = 24 * 60 * 60 * 1000 //"1 day"
+  }
+
+  return intervalInMS;
+};
+
+// Define a function to get missing timestamps
+// note that data will be in milliseconds
+const findMissingTimestamps = (data: any) => {  
+    const timestamps = data.map((item: any) => item[0]);
+    
+    const endTime = timestamps[timestamps.length - 1];
+    let currentTime = timestamps[0];
+
+    // find gap/interval between two timestamp
+    const interval = calculateTimeseriesInterval(currentTime, endTime);
+    
+    // simply push missing value in data array.
+    while (currentTime <= endTime) {
+      if (!timestamps.includes(currentTime)) {
+        data.push([currentTime, null]);
+      }
+      currentTime = currentTime + interval;
+    }
+
+    // Sort the combined data by timestamp
+    data.sort((a: any, b: any) => a[0] - b[0]);
+    return data;
+}
+
+// Define a function to convert milliseconds to ZonedTime
+// note that millisecondsArr is an array of arrays with two elements [timestamp, value].
+const convertDateFromMillisecondsToZonedTime = (millisecondsArr: any, timezone: any) => {
+  return millisecondsArr.map((it: any) => (timezone === "UTC" ? [new Date(it[0]).toISOString().slice(0, -1), it[1]] : [utcToZonedTime(it[0], timezone), it[1]]));
 }
 
 /**
