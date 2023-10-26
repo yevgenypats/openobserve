@@ -28,7 +28,8 @@ import {
 export const convertSQLData = (
   panelSchema: any,
   searchQueryData: any,
-  store: any
+  store: any,
+  selectedTimeObj: any
 ) => {
   // if no data than return it
   if (
@@ -980,7 +981,7 @@ export const convertSQLData = (
         ]);
         // find missing timestamps
         // value for missing timestamp will be null
-        seriesObj.data = findMissingTimestamps(seriesObj.data);
+        seriesObj.data = findMissingTimestamps(seriesObj.data, selectedTimeObj);
         // convert timestamp into ZonedTime
         seriesObj.data = convertDateFromMillisecondsToZonedTime(seriesObj.data, store.state.timezone);        
       });
@@ -1075,7 +1076,7 @@ export const convertSQLData = (
         ]);
         // find missing timestamps
         // value for missing timestamp will be null
-        seriesObj.data = findMissingTimestamps(seriesObj.data);
+        seriesObj.data = findMissingTimestamps(seriesObj.data, selectedTimeObj);
         // convert timestamp into ZonedTime
         seriesObj.data = convertDateFromMillisecondsToZonedTime(seriesObj.data, store.state.timezone);
       });
@@ -1219,14 +1220,14 @@ const calculateTimeseriesInterval = (start_time: any, end_time: any) => {
 
 // Define a function to get missing timestamps
 // note that data will be in milliseconds
-const findMissingTimestamps = (data: any) => {  
+const findMissingTimestamps = (data: any, selectedTimeObj: any) => {  
     const timestamps = data.map((item: any) => item[0]);
     
     const endTime = timestamps[timestamps.length - 1];
     let currentTime = timestamps[0];
 
     // find gap/interval between two timestamp
-    const interval = calculateTimeseriesInterval(currentTime, endTime);
+    const interval = calculateTimeseriesInterval(selectedTimeObj.start_time, selectedTimeObj.end_time); 
     
     // simply push missing value in data array.
     while (currentTime <= endTime) {
