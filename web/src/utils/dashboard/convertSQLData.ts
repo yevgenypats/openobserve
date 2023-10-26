@@ -1069,14 +1069,15 @@ export const convertSQLData = (
     if (isTimeSeries(sample)) {
       options.series.map((seriesObj: any) => {
         seriesObj.data = seriesObj?.data?.map((it: any, index: any) => [
-          store.state.timezone != "UTC"
-            ? utcToZonedTime(
-                new Date(options.xAxis[0].data[index] + "Z").getTime(),
-                store.state.timezone
-              )
-            : new Date(options.xAxis[0].data[index]).getTime(),
+          // converting timestamp string into milliseconds
+          new Date(options.xAxis[0].data[index] + "Z").getTime(),
           it,
         ]);
+        // find missing timestamps
+        // value for missing timestamp will be null
+        seriesObj.data = findMissingTimestamps(seriesObj.data);
+        // convert timestamp into ZonedTime
+        seriesObj.data = convertDateFromMillisecondsToZonedTime(seriesObj.data, store.state.timezone);
       });
       options.xAxis[0].type = "time";
       options.xAxis[0].data = [];
