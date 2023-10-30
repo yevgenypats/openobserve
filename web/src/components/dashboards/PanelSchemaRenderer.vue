@@ -89,7 +89,7 @@ export default defineComponent({
       if (!errorDetail.value) {
 
         try {
-          panelData.value = convertPanelData(panelSchema.value, data.value, store);
+          panelData.value = convertPanelData(panelSchema.value, data.value, store, selectedTimeObj.value);
           errorDetail.value = "";
         } catch (error: any) {
           errorDetail.value = error.message;

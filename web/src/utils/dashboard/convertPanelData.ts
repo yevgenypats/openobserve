@@ -23,7 +23,7 @@ import { convertMapData } from "@/utils/dashboard/convertMapData";
  * @param {any} data - The data to be converted.
  * @return {any} The converted data.
  */
-export const convertPanelData = (panelSchema: any, data: any, store: any) => {
+export const convertPanelData = (panelSchema: any, data: any, store: any, selectedTimeObj: any) => {
   // based on the panel config, using the switch calling the appropriate converter
   // based on panel Data chartType is taken for ignoring unnecessary api calls 
   switch (panelSchema.type) {
@@ -46,7 +46,7 @@ export const convertPanelData = (panelSchema: any, data: any, store: any) => {
       ) {
         return {chartType: panelSchema.type, ...convertPromQLData(panelSchema, data, store)};
       } else {
-        return {chartType: panelSchema.type, ...convertSQLData(panelSchema, data, store)};
+        return {chartType: panelSchema.type, ...convertSQLData(panelSchema, data, store, selectedTimeObj)};
       }
     }
     case "table": {

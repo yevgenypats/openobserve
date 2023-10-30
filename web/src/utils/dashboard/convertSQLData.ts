@@ -1191,27 +1191,29 @@ const isTimeSeries = (sample: any) =>{
 }
 
 // calculate interval for histogram data
-const calculateTimeseriesInterval = (start_time: any, end_time: any) => {  
+const calculateTimeseriesInterval = (start_time: any, end_time: any) => {
+  const timestampDiff = (end_time - start_time)/1000;
+    
   let intervalInMS = 10 * 1000; // 10 seconds
-  if (end_time - start_time >= 1000 * 60 * 30) {
+  if (timestampDiff >= 1000 * 60 * 30) {
     intervalInMS = 15 * 1000; //"15 second"
   }
-  if (end_time - start_time >= 1000 * 60 * 60) {
+  if (timestampDiff >= 1000 * 60 * 60) {
     intervalInMS = 30 * 1000 //"30 second"
   }
-  if (end_time - start_time >= 1000 * 3600 * 2) {
+  if (timestampDiff >= 1000 * 3600 * 2) {
     intervalInMS = 1 * 60 * 1000 //"1 minute"
   }
-  if (end_time - start_time >= 1000 * 3600 * 6) {
+  if (timestampDiff >= 1000 * 3600 * 6) {
     intervalInMS = 5 * 60 * 1000 //"5 minute"
   }
-  if (end_time - start_time >= 1000 * 3600 * 24) {
+  if (timestampDiff >= 1000 * 3600 * 24) {
     intervalInMS = 30 * 60 * 1000 //"30 minute"
   }
-  if (end_time - start_time >= 1000 * 86400 * 7) {
+  if (timestampDiff >= 1000 * 86400 * 7) {
     intervalInMS = 60 * 60 * 1000 //"1 hour"
   }
-  if (end_time - start_time >= 1000 * 86400 * 30) {
+  if (timestampDiff >= 1000 * 86400 * 30) {
     intervalInMS = 24 * 60 * 60 * 1000 //"1 day"
   }
 
@@ -1227,7 +1229,8 @@ const findMissingTimestamps = (data: any, selectedTimeObj: any) => {
     let currentTime = timestamps[0];
 
     // find gap/interval between two timestamp
-    const interval = calculateTimeseriesInterval(selectedTimeObj.start_time, selectedTimeObj.end_time); 
+    // start_time and end_time is commint in milliseconds, need to convert in seconds
+    const interval = calculateTimeseriesInterval(selectedTimeObj.start_time, selectedTimeObj.end_time);     
     
     // simply push missing value in data array.
     while (currentTime <= endTime) {
