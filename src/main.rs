@@ -21,7 +21,6 @@ use opentelemetry::{
 };
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_proto::tonic::collector::{
-    logs::v1::logs_service_server::LogsServiceServer,
     metrics::v1::metrics_service_server::MetricsServiceServer,
     trace::v1::trace_service_server::TraceServiceServer,
 };
@@ -59,10 +58,10 @@ use openobserve::{
                 metrics_server::MetricsServer, search_server::SearchServer,
                 usage_server::UsageServer,
             },
+            get_logs_proxy, get_logs_svc,
             request::{
                 event::Eventer,
                 file_list::Filelister,
-                logs::LogsServer,
                 metrics::{ingester::Ingester, querier::Querier},
                 search::Searcher,
                 traces::TraceServer,
@@ -299,18 +298,15 @@ fn init_grpc_server() -> Result<(), anyhow::Error> {
     let usage_svc = UsageServer::new(UsageServerImpl)
         .send_compressed(CompressionEncoding::Gzip)
         .accept_compressed(CompressionEncoding::Gzip);
-    let logs_svc = LogsServiceServer::new(LogsServer)
-        .send_compressed(CompressionEncoding::Gzip)
-        .accept_compressed(CompressionEncoding::Gzip);
     let tracer = TraceServer::default();
     let trace_svc = TraceServiceServer::new(tracer)
         .send_compressed(CompressionEncoding::Gzip)
         .accept_compressed(CompressionEncoding::Gzip);
 
     tokio::task::spawn(async move {
-        log::info!("starting gRPC server at {}", gaddr);
+        log::info!("starting gRPC proxy at {}", gaddr);
         tonic::transport::Server::builder()
-            .layer(tonic::service::interceptor(check_auth))
+            //.layer(tonic::service::interceptor(check_auth))
             .add_service(event_svc)
             .add_service(search_svc)
             .add_service(filelist_svc)
@@ -318,11 +314,56 @@ fn init_grpc_server() -> Result<(), anyhow::Error> {
             .add_service(metrics_ingest_svc)
             .add_service(trace_svc)
             .add_service(usage_svc)
-            .add_service(logs_svc)
+            .add_service(get_logs_proxy())
             .serve(gaddr)
             .await
             .expect("gRPC server init failed");
     });
+
+    for i in 1..CONFIG.limit.http_worker_num + 1 {
+        let gpaddr: SocketAddr = format!("0.0.0.0:{}", CONFIG.grpc.port + i as u16).parse()?;
+
+        let event_svc = EventServer::new(Eventer)
+            .send_compressed(CompressionEncoding::Gzip)
+            .accept_compressed(CompressionEncoding::Gzip);
+        let search_svc = SearchServer::new(Searcher)
+            .send_compressed(CompressionEncoding::Gzip)
+            .accept_compressed(CompressionEncoding::Gzip);
+        let filelist_svc = FilelistServer::new(Filelister)
+            .send_compressed(CompressionEncoding::Gzip)
+            .accept_compressed(CompressionEncoding::Gzip);
+        let metrics_svc = MetricsServer::new(Querier)
+            .send_compressed(CompressionEncoding::Gzip)
+            .accept_compressed(CompressionEncoding::Gzip);
+        let metrics_ingest_svc = MetricsServiceServer::new(Ingester)
+            .send_compressed(CompressionEncoding::Gzip)
+            .accept_compressed(CompressionEncoding::Gzip);
+        let usage_svc = UsageServer::new(UsageServerImpl)
+            .send_compressed(CompressionEncoding::Gzip)
+            .accept_compressed(CompressionEncoding::Gzip);
+        let tracer = TraceServer::default();
+        let trace_svc = TraceServiceServer::new(tracer)
+            .send_compressed(CompressionEncoding::Gzip)
+            .accept_compressed(CompressionEncoding::Gzip);
+
+        tokio::task::spawn(async move {
+            log::info!("starting gRPC server at {}", gpaddr);
+            tonic::transport::Server::builder()
+                .layer(tonic::service::interceptor(check_auth))
+                .add_service(event_svc)
+                .add_service(search_svc)
+                .add_service(filelist_svc)
+                .add_service(metrics_svc)
+                .add_service(metrics_ingest_svc)
+                .add_service(trace_svc)
+                .add_service(usage_svc)
+                .add_service(get_logs_svc())
+                .serve(gpaddr)
+                .await
+                .expect("gRPC server init failed");
+        });
+    }
+
     Ok(())
 }
 

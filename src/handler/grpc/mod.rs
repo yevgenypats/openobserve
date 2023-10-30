@@ -12,11 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use tonic::codegen::CompressionEncoding;
 use uuid::Uuid;
 
 use crate::common::meta;
 use crate::common::utils::json;
+use crate::handler::grpc::{
+    cluster_rpc::{
+        event_server::EventServer, filelist_server::FilelistServer, metrics_server::MetricsServer,
+        usage_server::UsageServer,
+    },
+    request::{
+        event::Eventer,
+        file_list::Filelister,
+        logs::{LogsServer, LogsServerProxy},
+        metrics::{ingester::Ingester, querier::Querier},
+        traces::TraceServer,
+        usage::UsageServerImpl,
+    },
+};
 use crate::service::promql;
+use opentelemetry_proto::tonic::collector::{
+    logs::v1::logs_service_server::LogsServiceServer,
+    metrics::v1::metrics_service_server::MetricsServiceServer,
+    trace::v1::trace_service_server::TraceServiceServer,
+};
 
 pub mod auth;
 pub mod request;
@@ -199,6 +219,48 @@ impl From<Vec<json::Value>> for cluster_rpc::UsageData {
             data: json::to_vec(&usages).unwrap(),
         }
     }
+}
+
+pub fn get_logs_svc() -> LogsServiceServer<LogsServer> {
+    LogsServiceServer::new(LogsServer)
+        .send_compressed(CompressionEncoding::Gzip)
+        .accept_compressed(CompressionEncoding::Gzip)
+}
+
+pub fn get_logs_proxy() -> LogsServiceServer<LogsServerProxy> {
+    LogsServiceServer::new(LogsServerProxy)
+        .send_compressed(CompressionEncoding::Gzip)
+        .accept_compressed(CompressionEncoding::Gzip)
+}
+pub fn get_event_svc() -> EventServer<Eventer> {
+    EventServer::new(Eventer)
+        .send_compressed(CompressionEncoding::Gzip)
+        .accept_compressed(CompressionEncoding::Gzip)
+}
+pub fn get_trace_svc() -> TraceServiceServer<TraceServer> {
+    TraceServiceServer::new(TraceServer::default())
+        .send_compressed(CompressionEncoding::Gzip)
+        .accept_compressed(CompressionEncoding::Gzip)
+}
+pub fn get_metrics_svc() -> MetricsServiceServer<Ingester> {
+    MetricsServiceServer::new(Ingester)
+        .send_compressed(CompressionEncoding::Gzip)
+        .accept_compressed(CompressionEncoding::Gzip)
+}
+pub fn get_usage_svc() -> UsageServer<UsageServerImpl> {
+    UsageServer::new(UsageServerImpl)
+        .send_compressed(CompressionEncoding::Gzip)
+        .accept_compressed(CompressionEncoding::Gzip)
+}
+pub fn get_metrics_query_svc() -> MetricsServer<Querier> {
+    MetricsServer::new(Querier)
+        .send_compressed(CompressionEncoding::Gzip)
+        .accept_compressed(CompressionEncoding::Gzip)
+}
+pub fn get_filelist_svc() -> FilelistServer<Filelister> {
+    FilelistServer::new(Filelister)
+        .send_compressed(CompressionEncoding::Gzip)
+        .accept_compressed(CompressionEncoding::Gzip)
 }
 
 #[cfg(test)]

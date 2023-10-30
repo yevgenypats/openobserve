@@ -14,8 +14,10 @@
 
 use async_trait::async_trait;
 use opentelemetry_proto::tonic::collector::logs::v1::{
-    logs_service_server::LogsService, ExportLogsServiceRequest, ExportLogsServiceResponse,
+    logs_service_client::LogsServiceClient, logs_service_server::LogsService,
+    ExportLogsServiceRequest, ExportLogsServiceResponse,
 };
+
 use tonic::{Response, Status};
 
 use crate::common::infra::config::CONFIG;
@@ -63,5 +65,32 @@ impl LogsService for LogsServer {
             })),
             Err(e) => Err(Status::internal(e.to_string())),
         }
+    }
+}
+
+#[derive(Default)]
+pub struct LogsServerProxy;
+
+#[async_trait]
+impl LogsService for LogsServerProxy {
+    async fn export(
+        &self,
+        request: tonic::Request<ExportLogsServiceRequest>,
+    ) -> Result<tonic::Response<ExportLogsServiceResponse>, tonic::Status> {
+        /*  let mut endpoints;
+          for i in 1..CONFIG.limit.http_worker_num {
+            let gpaddr: SocketAddr = format!("0.0.0.0:{}", CONFIG.grpc.port + i as u16).parse()?;
+        } */
+
+        let endpoints = ["http://127.0.0.1:5082", "http://127.0.0.1:5083"]
+            .iter()
+            .map(|a| tonic::transport::Channel::from_static(a));
+
+        let channel = tonic::transport::Channel::balance_list(endpoints);
+
+        let mut client = LogsServiceClient::new(channel);
+        println!("forwarding request");
+
+        client.export(request).await
     }
 }
