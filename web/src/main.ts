@@ -213,6 +213,7 @@ const getConfig = async () => {
       trackLongTasks: true,
       trackUserInteractions: true,
       version: "v1",
+      defaultPrivacyLevel: "allow",
     });
 
     datadogLogs.init({
