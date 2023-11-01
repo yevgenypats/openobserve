@@ -81,12 +81,12 @@ const getConfig = async () => {
       site: config.ooSite,
       service: config.ooService,
       env: config.environment,
-      version: '0.0.1',
-      organizationIdentifier: 'default',
+      version: "0.0.1",
+      organizationIdentifier: "default",
       insecureHTTP: false,
-      apiVersion: 'v1',
+      apiVersion: "v1",
     };
-    
+
     openobserveRum.init({
       applicationId: options.applicationId, // required, any string identifying your application
       clientToken: options.clientToken,
@@ -101,7 +101,7 @@ const getConfig = async () => {
       apiVersion: options.apiVersion,
       insecureHTTP: options.insecureHTTP,
     });
-    
+
     openobserveLogs.init({
       clientToken: options.clientToken,
       site: options.site,
@@ -170,61 +170,7 @@ const getConfig = async () => {
       version: "v1",
     });
 
-    openobserveRum.startSessionReplayRecording();
-
-    datadogRum.init({
-      applicationId: "04d3b6de-51c1-49d5-a693-504293e3d36f", // required, any string identifying your application
-      clientToken: "pub7021787ca082769936566dbefdd0d13c",
-      site: "us5.datadoghq.com",
-      service: "openobserve",
-      // service: "my-web-application",
-      // env: "production",
-      // version: "1.0.0",
-      sessionSampleRate: 100,
-      sessionReplaySampleRate: 100, // if not included, the default is 100
-      trackResources: true,
-      trackLongTasks: true,
-      trackUserInteractions: true,
-      version: "v1",
-      defaultPrivacyLevel: "allow",
-    });
-
-    datadogLogs.init({
-      clientToken: "pub7021787ca082769936566dbefdd0d13c",
-      site: "us5.datadoghq.com",
-      forwardErrorsToLogs: true,
-      sessionSampleRate: 100,
-      version: "v1",
-    });
-
-    openobserveRum.startSessionReplayRecording();
-
-    datadogRum.init({
-      applicationId: "04d3b6de-51c1-49d5-a693-504293e3d36f", // required, any string identifying your application
-      clientToken: "pub7021787ca082769936566dbefdd0d13c",
-      site: "us5.datadoghq.com",
-      service: "openobserve",
-      // service: "my-web-application",
-      // env: "production",
-      // version: "1.0.0",
-      sessionSampleRate: 100,
-      sessionReplaySampleRate: 100, // if not included, the default is 100
-      trackResources: true,
-      trackLongTasks: true,
-      trackUserInteractions: true,
-      version: "v1",
-      defaultPrivacyLevel: "allow",
-    });
-
-    datadogLogs.init({
-      clientToken: "pub7021787ca082769936566dbefdd0d13c",
-      site: "us5.datadoghq.com",
-      forwardErrorsToLogs: true,
-      sessionSampleRate: 100,
-      version: "v1",
-    });
-
-    openobserveRum.startSessionReplayRecording();
+    datadogRum.startSessionReplayRecording();
   });
 };
 
