@@ -232,6 +232,13 @@ export default defineComponent({
           );
           //analytics
 
+          //openobserve browser-sdk setuser context
+          openobserveRum.setUser({
+            id: this.userInfo.id,
+            name: this.userInfo.given_name + " " + this.userInfo.family_name,
+            email: this.userInfo.email,
+          });
+
           this.getDefaultOrganization();
         }
       });
