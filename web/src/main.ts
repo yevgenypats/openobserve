@@ -101,6 +101,8 @@ const getConfig = async () => {
       insecureHTTP: false,
       apiVersion: "v1",
       service: "alpha1-cloud",
+      env: "alpha1",
+      version: "1.0.0",
     });
 
     openobserveRum.startSessionReplayRecording();
