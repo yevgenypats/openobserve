@@ -101,7 +101,7 @@ const getConfig = async () => {
       apiVersion: options.apiVersion,
       insecureHTTP: options.insecureHTTP,
     });
-
+    
     openobserveLogs.init({
       clientToken: options.clientToken,
       site: options.site,
