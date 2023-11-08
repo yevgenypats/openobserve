@@ -75,35 +75,73 @@ const getConfig = async () => {
       });
     }
 
+    const options = {
+      clientToken: config.ooClientToken,
+      applicationId: config.ooApplicationID,
+      site: config.ooSite,
+      service: config.ooService,
+      env: config.environment,
+      version: '0.0.1',
+      organizationIdentifier: 'default',
+      insecureHTTP: false,
+      apiVersion: 'v1',
+    };
+    
     openobserveRum.init({
-      applicationId: "web-application-id", // required, any string identifying your application
-      clientToken: "rumqRPQYJv76RcPEfo0",
-      site: "test2.gke.zinclabs.dev",
-      organizationIdentifier: "default",
-      service: "alpha1-cloud",
-      env: "alpha1",
-      version: "1.0.0",
-      sessionSampleRate: 100,
-      sessionReplaySampleRate: 100, // if not included, the default is 100
+      applicationId: options.applicationId, // required, any string identifying your application
+      clientToken: options.clientToken,
+      site: options.site,
+      organizationIdentifier: options.organizationIdentifier,
+      service: options.service,
+      env: options.env,
+      version: options.version,
       trackResources: true,
       trackLongTasks: true,
       trackUserInteractions: true,
-      apiVersion: "v1",
-      insecureHTTP: false,
+      apiVersion: options.apiVersion,
+      insecureHTTP: options.insecureHTTP,
     });
-
+    
     openobserveLogs.init({
-      clientToken: "rumqRPQYJv76RcPEfo0",
-      site: "test2.gke.zinclabs.dev",
-      organizationIdentifier: "default",
+      clientToken: options.clientToken,
+      site: options.site,
+      organizationIdentifier: options.organizationIdentifier,
+      service: options.service,
+      env: options.env,
+      version: options.version,
       forwardErrorsToLogs: true,
-      sessionSampleRate: 100,
-      insecureHTTP: false,
-      apiVersion: "v1",
-      service: "alpha1-cloud",
-      env: "alpha1",
-      version: "1.0.0",
+      insecureHTTP: options.insecureHTTP,
+      apiVersion: options.apiVersion,
     });
+    // openobserveRum.init({
+    //   applicationId: "web-application-id", // required, any string identifying your application
+    //   clientToken: "rumqRPQYJv76RcPEfo0",
+    //   site: "test2.gke.zinclabs.dev",
+    //   organizationIdentifier: "default",
+    //   service: "alpha1-cloud",
+    //   env: "alpha1",
+    //   version: "1.0.0",
+    //   sessionSampleRate: 100,
+    //   sessionReplaySampleRate: 100, // if not included, the default is 100
+    //   trackResources: true,
+    //   trackLongTasks: true,
+    //   trackUserInteractions: true,
+    //   apiVersion: "v1",
+    //   insecureHTTP: false,
+    // });
+
+    // openobserveLogs.init({
+    //   clientToken: "rumqRPQYJv76RcPEfo0",
+    //   site: "test2.gke.zinclabs.dev",
+    //   organizationIdentifier: "default",
+    //   forwardErrorsToLogs: true,
+    //   sessionSampleRate: 100,
+    //   insecureHTTP: false,
+    //   apiVersion: "v1",
+    //   service: "alpha1-cloud",
+    //   env: "alpha1",
+    //   version: "1.0.0",
+    // });
 
     openobserveRum.startSessionReplayRecording();
 
