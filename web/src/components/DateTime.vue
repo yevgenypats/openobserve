@@ -544,7 +544,7 @@ export default defineComponent({
         }
 
         let start, end;
-        if (!selectedDate.value?.from && !selectedTime.value?.startTime) {
+        if (!selectedDate.value?.from || !selectedTime.value?.startTime) {
           start = new Date();
         } else {
           start = new Date(
@@ -552,7 +552,7 @@ export default defineComponent({
           );
         }
 
-        if (selectedDate.value?.to == "" && selectedTime.value?.endTime == "") {
+        if (selectedDate.value?.to == "" || selectedTime.value?.endTime == "") {
           end = new Date();
         } else {
           end = new Date(
