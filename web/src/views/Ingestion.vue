@@ -149,7 +149,7 @@ export default defineComponent({
 
       segment.track("Button Click", {
         button: "Generate RUM Token",
-        user_org: this.store.state.selectedOrganization.identifier,
+        user_org: this.store.state.selectedOrganization?.identifier,
         user_id: this.store.state.userInfo.email,
         page: "Ingestion",
       });
@@ -178,7 +178,7 @@ export default defineComponent({
 
       segment.track("Button Click", {
         button: "Update RUM Token",
-        user_org: this.store.state.selectedOrganization.identifier,
+        user_org: this.store.state.selectedOrganization?.identifier,
         user_id: this.store.state.userInfo.email,
         page: "Ingestion",
       });
@@ -204,18 +204,19 @@ export default defineComponent({
 
     const tabs = [
       {
-        label: t('ingestion.recommendedLabel'),
+        label: t("ingestion.recommendedLabel"),
         value: "recommended",
       },
       {
-        label: t('ingestion.customLabel'),
+        label: t("ingestion.customLabel"),
         value: "custom",
       },
     ];
 
     onBeforeMount(() => {
       if (
-        !store.state.organizationData.organizationPasscode || !store.state.organizationData.rumToken.rum_token
+        !store.state.organizationData.organizationPasscode ||
+        !store.state.organizationData.rumToken.rum_token
       ) {
         getOrganizationPasscode();
         getRUMToken();

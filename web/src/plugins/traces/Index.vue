@@ -224,7 +224,7 @@ export default defineComponent({
       if (config.isCloud == "true") {
         segment.track("Button Click", {
           button: "Search Data",
-          user_org: this.store.state.selectedOrganization.identifier,
+          user_org: this.store.state.selectedOrganization?.identifier,
           user_id: this.store.state.userInfo.email,
           stream_name: this.searchObj.data.stream.selectedStream.value,
           show_query: this.searchObj.meta.showQuery,

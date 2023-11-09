@@ -427,7 +427,7 @@ end`;
 
         segment.track("Button Click", {
           button: "Save Function",
-          user_org: this.store.state.selectedOrganization.identifier,
+          user_org: this.store.state.selectedOrganization?.identifier,
           user_id: this.store.state.userInfo.email,
           stream_name: this.formData.stream_name,
           function_name: this.formData.name,
