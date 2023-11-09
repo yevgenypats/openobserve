@@ -90,9 +90,6 @@ import QueryEditor from "../QueryEditor.vue";
 import useDashboardPanelData from "../../../composables/useDashboardPanel";
 import QueryTypeSelector from "../addPanel/QueryTypeSelector.vue";
 import usePromqlSuggestions from "@/composables/usePromqlSuggestions";
-import searchService from "@/services/search";
-import { useStore } from "vuex";
-import metricService from "@/services/metrics";
 
 export default defineComponent({
     name: "DashboardQueryEditor",
@@ -115,7 +112,6 @@ export default defineComponent({
         const confirmQueryModeChangeDialog = ref(false)
         const parser = new Parser();
         let streamName = "";
-        const store = useStore();
         const {
             autoCompleteData,
             autoCompletePromqlKeywords,
@@ -133,15 +129,7 @@ export default defineComponent({
                 updatePromQLQuery(query, fields);
             }
         }
-        const metricLabelValues: Ref<{
-            [key: string]: {
-                isLoading: boolean;
-                values: {
-                    key: string;
-                    count: number | string;
-                }[];
-            };
-        }> = ref({});
+
         const removeTab = async (index) => {
             if (dashboardPanelData.layout.currentQueryIndex >= dashboardPanelData.data.queries.length-1) dashboardPanelData.layout.currentQueryIndex -=1;
             removeQuery(index);
@@ -153,9 +141,6 @@ export default defineComponent({
             },
             set: (value) => {
                 if (promqlMode.value) {
-                    console.log("promql mode")
-                    
-                    openFilterCreator(value, { name: dashboardPanelData.data.queries[dashboardPanelData.layout.currentQueryIndex].name })
                     dashboardPanelData.data.queries[dashboardPanelData.layout.currentQueryIndex].query = value
                 } else {
                     console.log("sql mode")
@@ -164,105 +149,6 @@ export default defineComponent({
             }
         })
 
-        const getFilteredMetricValues = (name: string) => {
-            const parsedQuery: any = parsePromQlQuery(dashboardPanelData.data.queries[dashboardPanelData.layout.currentQueryIndex].query);
-            const metricName = parsedQuery?.metricName || "";
-            const labels = parsedQuery?.label?.labels || {};
-            if (metricName) labels["__name__"] = metricName;
-
-            const formattedLabels = Object.keys(labels).map((key) => {
-                return `${key}="${labels[key]}"`;
-            });
-
-            searchService
-                .get_promql_series({
-                    org_identifier: store.state.selectedOrganization.identifier,
-                    start_time: Number(dashboardPanelData.meta.dateTime.start_time),
-                    end_time: Number(dashboardPanelData.meta.dateTime.end_time),
-                    labels: `{${formattedLabels.join(",")}}`,
-                })
-                .then((res) => {
-                    if (res.data.data.length) {
-                        const valuesSet = new Map();
-                        res.data.data.forEach((label: any) => {
-                            if (!label[name]) return;
-                            if (valuesSet.has(label[name])) {
-                                valuesSet.set(label[name], valuesSet.get(label[name]) + 1);
-                            } else {
-                                valuesSet.set(label[name], 1);
-                            }
-                        });
-                        metricLabelValues.value[name]["values"] = [];
-                        valuesSet.forEach((value, key) => {
-                            metricLabelValues.value[name]["values"].push({
-                                key: key ? key : "null",
-                                count: value,
-                            });
-                        });
-                    }
-                })
-                .catch((err) => console.log(err))
-                .finally(() => {
-                    metricLabelValues.value[name].isLoading = false;
-                });
-        };
-        const openFilterCreator = (event: any, { name }: any) => {
-            metricLabelValues.value[name] = {
-                isLoading: true,
-                values: [],
-            };
-            metricService
-                .formatPromqlQuery({
-                    org_identifier: store.state.selectedOrganization.identifier,
-                    query: dashboardPanelData.data.queries[dashboardPanelData.layout.currentQueryIndex].query,
-                })
-                .then(() => {
-                    getFilteredMetricValues(name);
-                })
-                .catch(() => {
-                    getMetricsFieldValues(name);
-                });
-        };
-        const getMetricsFieldValues = (name: string) => {
-            const startISOTimestamp: any = dashboardPanelData.meta.dateTime.start_time;
-            const endISOTimestamp: any = dashboardPanelData.meta.dateTime.end_time;
-            metricLabelValues.value[name] = {
-                isLoading: true,
-                values: [],
-            };
-            try {
-                stream
-                    .fieldValues({
-                        org_identifier: store.state.selectedOrganization.identifier,
-                        stream_name: dashboardPanelData.data.metrics.selectedMetric?.value,
-                        start_time: startISOTimestamp,
-                        end_time: endISOTimestamp,
-                        fields: [name],
-                        type: "metrics",
-                        size: 10,
-                    })
-                    .then((res: any) => {
-                        if (res.data.hits.length) {
-                            metricLabelValues.value[name]["values"] = res.data.hits
-                                .find((field: any) => field.field === name)
-                                .values.map((value: any) => {
-                                    return {
-                                        key: value.zo_sql_key ? value.zo_sql_key : "null",
-                                        count: formatLargeNumber(value.zo_sql_num),
-                                    };
-                                });
-                        }
-                    })
-                    .finally(() => {
-                        metricLabelValues.value[name]["isLoading"] = false;
-                    });
-            } catch (err) {
-                quasar.notify({
-                    type: "negative",
-                    message: "Error while fetching field values",
-                });
-            }
-        };
         // toggle show query view
         const onDropDownClick = () => {
             dashboardPanelData.layout.showQueryBar = !dashboardPanelData.layout.showQueryBar
@@ -460,6 +346,7 @@ export default defineComponent({
                 // Get the parsed query
                 try {
                     dashboardPanelData.meta.parsedQuery = parser.astify(dashboardPanelData.data.queries[dashboardPanelData.layout.currentQueryIndex].query);
+                    console.log('parsedQuery',dashboardPanelData.meta.parsedQuery)
                 } catch (e) {
                     // exit as there is an invalid query
                     dashboardPanelData.meta.errors.queryErrors.push("Invalid SQL Syntax")

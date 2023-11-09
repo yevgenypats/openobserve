@@ -15,6 +15,7 @@
 import { ref, watch, reactive, toRefs, onMounted, onUnmounted } from "vue";
 import queryService from "../../services/search";
 import { useStore } from "vuex";
+import { addLabelToPromQlQuery } from "@/utils/dashboard/convertPromQLVariableQuery";
 
 const formatInterval = (interval: any) => {
   switch(true) {
@@ -216,12 +217,13 @@ export const usePanelDataLoader = (
 
       // Iterate through each query in the panel schema
       const queryPromises = panelSchema.value.queries?.map(async (it: any) => {
+        console.log("queryPromises", it);
         
         // Call the metrics_query_range API
         return queryService
           .metrics_query_range({
             org_identifier: store.state.selectedOrganization.identifier,
-            query: replaceQueryValue(it.query, startISOTimestamp, endISOTimestamp),
+            query: replaceQueryValue(it.query, startISOTimestamp, endISOTimestamp, panelSchema.value.queryType),
             start_time: startISOTimestamp,
             end_time: endISOTimestamp,
           })
@@ -250,12 +252,18 @@ export const usePanelDataLoader = (
 
       const sqlqueryPromise = panelSchema.value.queries?.map(
         async (it: any) => {
+          console.log("sqlqueryPromise", it);
           return await queryService
             .search({
               org_identifier: store.state.selectedOrganization.identifier,
               query: {
                 query: {
-                  sql: replaceQueryValue(it.query, startISOTimestamp, endISOTimestamp),
+                  sql: replaceQueryValue(
+                    it.query,
+                    startISOTimestamp,
+                    endISOTimestamp,
+                    panelSchema.value.queryType
+                  ),
                   sql_mode: "full",
                   start_time: startISOTimestamp,
                   end_time: endISOTimestamp,
@@ -352,7 +360,9 @@ export const usePanelDataLoader = (
    * @param {any} query - The query to be modified.
    * @return {any} The modified query with replaced values.
    */
-  const replaceQueryValue = (query: any, startISOTimestamp: any, endISOTimestamp: any) => {
+  const replaceQueryValue = (query: any, startISOTimestamp: any, endISOTimestamp: any, queryType: any) => {
+    console.log("replaceQueryValue", query, startISOTimestamp, endISOTimestamp, queryType);
+    
 
     //fixed variables value calculations
     //scrape interval by default 15 seconds
@@ -398,12 +408,28 @@ export const usePanelDataLoader = (
     }); 
 
     if (currentDependentVariablesData?.length) {
+      console.log("currentDependentVariablesData", currentDependentVariablesData);
 
-      currentDependentVariablesData?.forEach((variable: any) => {
+      currentDependentVariablesData?.forEach((variable: any) => {        
         const variableName = `$${variable.name}`;
         const variableValue = variable.value;
         query = query.replaceAll(variableName, variableValue);
       });
+
+      if (queryType === "promql") {
+        const adHocVariables = [
+          {
+            name: "kubernetes_namespace_name",
+            value: "ziox-alpha1",
+          },
+        ];
+
+        adHocVariables.forEach((variable: any) => {
+          query = addLabelToPromQlQuery(query,variable.name, variable.value)
+        })
+        console.log("query",query);
+      }
+
       return query;
     } else {
       return query;
