@@ -515,6 +515,9 @@ export default defineComponent({
       const selected_stream: any = schemaList.value.filter(
         (stream) => stream["name"] === stream_name
       );
+
+      if (!selected_stream || !selected_stream.length) return;
+
       selected_stream[0].schema.forEach(function (item: any, index: any) {
         triggerCols.value.push(item.name);
       });
