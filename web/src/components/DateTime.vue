@@ -438,11 +438,14 @@ export default defineComponent({
 
     const resetTime = (startTime, endTime) => {
       if (!startTime || !endTime) {
+        selectedDate.value = {
+          from: "",
+          to: "",
+        };
         var dateString = new Date().toLocaleDateString("en-ZA");
         selectedDate.value.from = dateString;
         selectedDate.value.to = dateString;
         if (!startTime) selectedTime.value.startTime = "00:00";
-
         if (!endTime) selectedTime.value.endTime = "23:59";
         return;
       }

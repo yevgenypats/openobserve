@@ -348,8 +348,9 @@ export default defineComponent({
     onActivated(async () => {
       if (!searchObj.loading) updateStreams();
       if (
+        store.state.selectedOrganization?.identifier &&
         searchObj.organizationIdetifier !=
-        store.state.selectedOrganization.identifier
+          store.state.selectedOrganization.identifier
       ) {
         loadLogsData();
       }
@@ -358,7 +359,7 @@ export default defineComponent({
 
     onBeforeMount(() => {
       searchObj.organizationIdetifier =
-        store.state.selectedOrganization.identifier;
+        store.state.selectedOrganization?.identifier;
       restoreUrlQueryParams();
       loadLogsData();
     });

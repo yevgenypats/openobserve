@@ -82,9 +82,9 @@
           </template>
           <template #no-option>
             <q-item>
-              <q-item-section class="text-xs"
-                >{{t('search.functionMessage')}}</q-item-section
-              >
+              <q-item-section class="text-xs">{{
+                t("search.functionMessage")
+              }}</q-item-section>
             </q-item>
           </template>
         </q-select>
@@ -104,10 +104,7 @@
         <q-btn
           class="q-mr-sm download-logs-btn q-px-sm"
           size="sm"
-          :disabled="
-            searchObj.data.queryResults.hasOwnProperty('hits') &&
-            !searchObj.data.queryResults.hits.length
-          "
+          :disabled="!searchObj.data.queryResults?.hits?.length"
           icon="download"
           :title="t('search.exportLogs')"
           @click="downloadLogs"
@@ -145,7 +142,7 @@
               :disable="
                 searchObj.loading || searchObj.data.streamResults.length == 0
               "
-              >{{t('search.runQuery')}}</q-btn
+              >{{ t("search.runQuery") }}</q-btn
             >
           </div>
         </div>
@@ -208,10 +205,16 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn :label="t('confirmDialog.cancel')" color="primary"
-@click="cancelConfirmDialog" />
-          <q-btn :label="t('confirmDialog.ok')" color="positive"
-@click="confirmDialogOK" />
+          <q-btn
+            :label="t('confirmDialog.cancel')"
+            color="primary"
+            @click="cancelConfirmDialog"
+          />
+          <q-btn
+            :label="t('confirmDialog.ok')"
+            color="positive"
+            @click="confirmDialogOK"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -452,6 +455,12 @@ export default defineComponent({
     };
 
     const downloadLogs = () => {
+      if (
+        !searchObj.data.queryResults?.hits?.length ||
+        !searchObj.data.queryResults?.hits[0]
+      ) {
+        return;
+      }
       const filename = "logs-data.csv";
       const data = jsonToCsv(searchObj.data.queryResults.hits);
       const file = new File([data], filename, {
