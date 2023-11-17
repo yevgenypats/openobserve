@@ -218,7 +218,12 @@
         <q-select
           v-model="timezone"
           :options="filteredTimezone"
-          @blur="timezone = timezone == '' ? 'UTC' : timezone"
+          @blur="
+            timezone =
+              timezone == ''
+                ? Intl.DateTimeFormat().resolvedOptions().timeZone
+                : timezone
+          "
           use-input
           @filter="timezoneFilterFn"
           input-debounce="0"
@@ -230,6 +235,7 @@
           :label="t('logStream.timezone')"
           @update:modelValue="onTimezoneChange"
           :display-value="`Timezone: ${timezone}`"
+          class="timezone-select"
         >
         </q-select>
         <div v-if="!autoApply" class="flex justify-end q-py-sm q-px-md">
@@ -305,7 +311,8 @@ export default defineComponent({
     });
     const relativePeriod = ref("m");
     const relativeValue = ref(15);
-    const currentTimezone = useLocalTimezone() || "UTC";
+    const currentTimezone =
+      useLocalTimezone() || Intl.DateTimeFormat().resolvedOptions().timeZone;
     const timezone = ref(currentTimezone);
     let timezoneOptions = Intl.supportedValuesOf("timeZone").map((tz) => {
       return tz;
@@ -313,6 +320,7 @@ export default defineComponent({
 
     // Add the UTC option
     timezoneOptions.unshift("UTC");
+    timezoneOptions.unshift("Browser Time");
 
     const filteredTimezone: any = ref([]);
 
@@ -409,8 +417,13 @@ export default defineComponent({
     };
 
     const onTimezoneChange = async () => {
-      useLocalTimezone(timezone.value);
-      store.dispatch("setTimezone", timezone.value);
+      let selectedTimezone = timezone.value;
+      if (selectedTimezone.toLowerCase() == "browser time") {
+        selectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      }
+      //Intl.DateTimeFormat().resolvedOptions().timeZone
+      useLocalTimezone(selectedTimezone);
+      store.dispatch("setTimezone", selectedTimezone);
       await nextTick();
       if (selectedType.value == "absolute") saveDate("absolute");
       else saveDate("relative");
@@ -871,6 +884,12 @@ export default defineComponent({
       margin-right: 1rem;
       color: $dark-page;
     }
+  }
+}
+
+.timezone-select {
+  .q-item:nth-child(2) {
+    border-bottom: 1px solid #dcdcdc;
   }
 }
 </style>
