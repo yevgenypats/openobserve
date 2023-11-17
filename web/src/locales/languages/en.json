@@ -412,6 +412,7 @@
     "extraOptions": "Options",
     "nameOfVariable": "Name",
     "labelOfVariable": "Label (optional)",
+    "adhoclabelOfVariable": "Label",
     "ValueOfVariable": "Value",
     "DefaultValue": "Default value (optional)",
     "typeOfVariable": "Type of variable",
@@ -496,6 +497,7 @@
     "queryValues": "Query Values",
     "constant": "Constant",
     "textbox": "Textbox",
+    "ad-hoc-variable": "Ad hoc filters",
     "newFolder": "New Folder",
     "updateFolder": "Update Folder"
   },

@@ -30,10 +30,10 @@
             <div class="row">
               <div class="textbox col">
                 <q-input v-model="variableData.name" class="showLabelOnTop q-mr-sm"
-                  :label="t('dashboard.nameOfVariable') + ' *'" dense filled outlined stack-label
+                  :label="(variableData.type !== 'ad-hoc-filters' ? t('dashboard.nameOfVariable') : t('dashboard.adhoclabelOfVariable')) + ' *'" dense filled outlined stack-label
                   :rules="[(val: any) => !!(val.trim()) || 'Field is required!']"></q-input>
               </div>
-              <div class="textbox col">
+              <div class="textbox col" v-if="variableData.type !== 'ad-hoc-filters'">
                 <q-input v-model="variableData.label" class="showLabelOnTop" :label="t('dashboard.labelOfVariable')" dense
                   filled outlined stack-label></q-input>
               </div>
@@ -160,6 +160,10 @@ export default defineComponent({
       {
         label: t("dashboard.custom"),
         value: 'custom'
+      },
+      {
+        label: t("dashboard.ad-hoc-variable"),
+        value: 'ad-hoc-filters'
       }
     ])
 

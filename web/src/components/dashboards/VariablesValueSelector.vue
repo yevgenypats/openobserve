@@ -35,6 +35,9 @@
             </template>
         </q-select>
       </div>
+      <div v-if="item.type == 'ad-hoc-filters'">
+        <VariableAdHocValueSelector v-model="item.value" :variableItem="item" />
+      </div>
     </div>
   </div>
 </template>
@@ -45,21 +48,25 @@ import { defineComponent, reactive } from 'vue';
 import streamService from "../../services/stream";
 import { useStore } from 'vuex';
 import VariableQueryValueSelector from './settings/VariableQueryValueSelector.vue';
+import VariableAdHocValueSelector from './settings/VariableAdHocValueSelector.vue';
 
 export default defineComponent({
     name: "VariablesValueSelector",
     props: ["selectedTimeDate", "variablesConfig", "initialVariableValues"],
     emits: ["variablesData"],
     components: {
-      VariableQueryValueSelector
+      VariableQueryValueSelector, VariableAdHocValueSelector
     },
     setup(props: any, { emit }) {
+        console.log("props",props)
         const store = useStore();
         // variables data derived from the variables config list 
         const variablesData: any = reactive({
             isVariablesLoading: false,
             values: []
         });
+        console.log("variablesData",variablesData);
+        
         onMounted(() => {
             getVariablesData();
         });
@@ -191,6 +198,44 @@ export default defineComponent({
                         }
                         return obj;
                         // break;
+                    }
+                    case "ad-hoc-filters": {
+                        console.log("ad-hoc-filters");
+                        
+                         obj.isLoading = true;  // Set loading state
+
+                        return streamService
+                            .nameList(store.state.selectedOrganization.identifier, "", true)
+                            .then((res) => {
+                                console.log("obj", obj);
+                                
+                                obj.isLoading = false;  // Reset loading state
+                                obj.options = res.data.list;
+
+                                // Set value based on oldVariableValue or the first option
+                                let oldVariableObjectSelectedValue = oldVariableValue.find((it2: any) => it2.name === it.name);
+                                obj.value = oldVariableObjectSelectedValue ? oldVariableObjectSelectedValue.value : obj.options.length ? obj.options[0] : "";
+                                console.log("objjj", obj.value);
+                                
+                                variablesData.isVariablesLoading = variablesData.values.some((val: { isLoading: any; }) => val.isLoading);
+
+                                // triggers rerendering in the current component
+                                variablesData.values[index] = JSON.parse(JSON.stringify(obj));
+
+                                emitVariablesData();
+                                return obj;
+                            })
+                            .catch((error) => {
+                                obj.isLoading = false;  // Reset loading state
+                                // Handle error
+                                variablesData.isVariablesLoading = variablesData.values.some((val: { isLoading: any; }) => val.isLoading);
+
+                                // triggers rerendering in the current component
+                                variablesData.values[index] = JSON.parse(JSON.stringify(obj));
+
+                                emitVariablesData();
+                                return obj;
+                            });
                     }
                     default:
                         obj.value = it.value;
