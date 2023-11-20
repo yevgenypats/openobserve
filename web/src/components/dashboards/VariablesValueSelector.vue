@@ -202,7 +202,7 @@ export default defineComponent({
                     case "ad-hoc-filters": {
                         console.log("ad-hoc-filters");
                         
-                         obj.isLoading = true;  // Set loading state
+                        obj.isLoading = true;  // Set loading state
 
                         return streamService
                             .nameList(store.state.selectedOrganization.identifier, "", true)
@@ -210,7 +210,14 @@ export default defineComponent({
                                 console.log("obj", obj);
                                 
                                 obj.isLoading = false;  // Reset loading state
-                                obj.options = res.data.list;
+                                
+                                console.log("res.data.list", res.data.list.filter((item: any) => !item.schema));
+                                
+                                const options = res.data.list.map((item: any) => item.schema || []).flat().map((it2: any) => it2.name);
+                                // get unique values of the options array
+                                const uniqueOptions = [...new Set(options)];
+                                
+                                obj.options = uniqueOptions;
 
                                 // Set value based on oldVariableValue or the first option
                                 let oldVariableObjectSelectedValue = oldVariableValue.find((it2: any) => it2.name === it.name);
@@ -226,6 +233,8 @@ export default defineComponent({
                                 return obj;
                             })
                             .catch((error) => {
+                                console.log(error, "error");
+                                
                                 obj.isLoading = false;  // Reset loading state
                                 // Handle error
                                 variablesData.isVariablesLoading = variablesData.values.some((val: { isLoading: any; }) => val.isLoading);
