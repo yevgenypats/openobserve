@@ -39,6 +39,11 @@
                 <q-item-label class="q-pa-sm">Delete Panel</q-item-label>
               </q-item-section>
             </q-item>
+            <q-item clickable v-if="metaData" v-close-popup="true" @click="showViewPanel = true">
+                <q-item-section>
+                  <q-item-label class="q-pa-sm">Meta Data</q-item-label>
+                </q-item-section>
+              </q-item>
           </q-list>
         </q-btn-dropdown>
       </q-bar>
@@ -49,12 +54,18 @@
       :width="props.width"
       :height="props.height"
       :variablesData="props.variablesData"
+      @metadata-update="metaDataValue"
     ></PanelSchemaRenderer>
+    <q-dialog v-model="showViewPanel">
+        <q-card style="min-width: 500px; min-height: 300px;">
+          {{ JSON.stringify(metaData, null, 2) }}
+        </q-card>
+      </q-dialog>
   </div>
 </template>
 
 <script  lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import PanelSchemaRenderer from "./PanelSchemaRenderer.vue";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
@@ -73,6 +84,13 @@ export default defineComponent({
     const router = useRouter();
     const route = useRoute();
     const $q = useQuasar();
+    const metaData = ref();
+    const showViewPanel = ref(false);
+    const metaDataValue = (metadata: any) => {
+      metaData.value = metadata;
+      console.log("metadata panel", metadata);
+      
+    };
     //for edit panel
     const onEditPanel = (data:any) => {
       return router.push({
@@ -130,6 +148,9 @@ export default defineComponent({
       onEditPanel,
       onDuplicatePanel,
       store,
+      metaDataValue,
+      metaData,
+      showViewPanel
     };
   },
   methods: {
