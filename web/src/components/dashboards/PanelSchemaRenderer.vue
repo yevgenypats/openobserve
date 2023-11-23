@@ -84,7 +84,7 @@ export default defineComponent({
     const { panelSchema, selectedTimeObj, variablesData } = toRefs(props);
 
     // calls the apis to get the data based on the panel config
-    let { data, loading, errorDetail } = usePanelDataLoader(
+    let { data, loading, errorDetail, metadata } = usePanelDataLoader(
       panelSchema,
       selectedTimeObj,
       variablesData,
@@ -112,6 +112,11 @@ export default defineComponent({
         }
       }
     },{ deep: true });
+
+    watch(metadata, () => {
+        console.log("metadata", JSON.stringify(metadata.value, null, 2))
+        emit("metadata-update", metadata.value);
+    });
     
     const handleNoData = (panelType: any) => {
       const xAlias = panelSchema.value.queries[0].fields.x.map((it: any) => it.alias)
@@ -179,6 +184,7 @@ export default defineComponent({
       errorDetail,
       panelData,
       noData,
+      metadata
     };
   },
 });
