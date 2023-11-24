@@ -57,10 +57,46 @@
       @metadata-update="metaDataValue"
     ></PanelSchemaRenderer>
     <q-dialog v-model="showViewPanel">
-        <q-card style="min-width: 500px; min-height: 300px;">
-          {{ JSON.stringify(metaData, null, 2) }}
-        </q-card>
-      </q-dialog>
+    <q-card style="min-width: 500px; min-height: 300px;">
+      <q-card-section class="q-pt-md">
+        <h4 class="q-mb-sm">Metadata Details</h4>
+        <div v-for="query in metaData.queries" :key="query.originalQuery">
+          <div>
+            <strong>Original Query:</strong> {{ query.originalQuery }}
+          </div>
+          <div>
+            <strong>Query:</strong> {{ query.query }}
+          </div>
+          <div>
+            <strong>Start Time:</strong> {{ query.startTime }} ({{ new Date(query.startTime/1000).toLocaleString() }})
+          </div>
+          <div>
+            <strong>End Time:</strong> {{ query.endTime }} ({{ new Date(query.endTime/1000).toLocaleString() }})
+          </div>
+          <div>
+            <strong>Query Type:</strong> {{ query.queryType }}
+          </div>
+          <div v-if="query.variables && query.variables.length > 0">
+            <strong>Variables:</strong>
+            <ul>
+              <li v-for="variable in query.variables" :key="variable.name">
+                <strong> {{ variable.type }} : </strong>{{ variable.name }} {{ variable.operator }} {{ variable.value }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </q-card-section>
+
+      <q-card-section v-if="metaData && metaData.length > 0">
+        <h4 class="q-mb-sm">Additional Details</h4>
+        <q-table
+          :rows="metaData"
+          :columns="columns"
+          row-key="originalQuery"
+        ></q-table>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
   </div>
 </template>
 
@@ -91,6 +127,15 @@ export default defineComponent({
       console.log("metadata panel", metadata);
       
     };
+
+    const columns: any = [
+      { name: "originalQuery", label: "Original Query", align: "left", field: "originalQuery" },
+      { name: "query", label: "Query", align: "left", field: "query" },
+      { name: "startTime", label: "Start Time", align: "left", field: "startTime" },
+      { name: "endTime", label: "End Time", align: "left", field: "endTime" },
+      { name: "queryType", label: "Query Type", align: "left", field: "queryType" },
+    ];
+
     //for edit panel
     const onEditPanel = (data:any) => {
       return router.push({
@@ -150,7 +195,8 @@ export default defineComponent({
       store,
       metaDataValue,
       metaData,
-      showViewPanel
+      showViewPanel,
+      columns
     };
   },
   methods: {
