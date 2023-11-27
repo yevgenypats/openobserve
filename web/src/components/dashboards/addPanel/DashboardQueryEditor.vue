@@ -116,7 +116,6 @@ export default defineComponent({
             autoCompleteData,
             autoCompletePromqlKeywords,
             getSuggestions,
-            parsePromQlQuery
         } = usePromqlSuggestions();
         const queryEditorRef = ref(null);
 
@@ -143,7 +142,6 @@ export default defineComponent({
                 if (promqlMode.value) {
                     dashboardPanelData.data.queries[dashboardPanelData.layout.currentQueryIndex].query = value
                 } else {
-                    console.log("sql mode")
                     dashboardPanelData.data.queries[dashboardPanelData.layout.currentQueryIndex].query = value
                 }
             }
@@ -346,7 +344,6 @@ export default defineComponent({
                 // Get the parsed query
                 try {
                     dashboardPanelData.meta.parsedQuery = parser.astify(dashboardPanelData.data.queries[dashboardPanelData.layout.currentQueryIndex].query);
-                    console.log('parsedQuery',dashboardPanelData.meta.parsedQuery)
                 } catch (e) {
                     // exit as there is an invalid query
                     dashboardPanelData.meta.errors.queryErrors.push("Invalid SQL Syntax")
@@ -413,8 +410,6 @@ export default defineComponent({
             autoCompleteData.value.popup.close =
                 queryEditorRef.value.disableSuggestionPopup;
             getSuggestions();
-            // console.log("autoCompleteData", autoCompleteData.value);
-            // console.log("queryEditorRef", queryEditorRef.value);
         }
 
         const onUpdateToggle = (value) => {
