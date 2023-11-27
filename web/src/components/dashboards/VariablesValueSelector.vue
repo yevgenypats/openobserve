@@ -214,9 +214,19 @@ export default defineComponent({
                                 
                                 console.log("res.data.list", res.data.list.filter((item: any) => !item.schema));
                                 
-                                const options = res.data.list.map((item: any) => item.schema || []).flat().map((it2: any) => it2.name);
+                                const options = res.data.list.map((item: any) => {
+                                    const schemaNames = (item.schema || []).flat().map((it2: any) => it2.name);
+                                    return {
+                                        name: item.name,
+                                        stream_type: item.stream_type,
+                                        schema_names: schemaNames,
+                                    };
+                                });
+                                console.log("optionssss", options);
+
                                 // get unique values of the options array
-                                const uniqueOptions = [...new Set(options)];
+                                const uniqueOptions = [...new Set(options.flatMap((option: any) => option.schema_names))];
+
                                 
                                 obj.options = uniqueOptions;
                                 
@@ -236,6 +246,14 @@ export default defineComponent({
                                 // }
                                 // console.log("objjj", obj.value);
 
+                                
+                                // const streams = res.data.list.map((item: any) => ({
+                                //     streamType: item.stream_type,
+                                //     streamName: item.name,
+                                // }));
+
+                                // console.log("streams", streams);
+                                
                                 obj.value = obj.value || [];
                                 
                                 variablesData.isVariablesLoading = variablesData.values.some((val: { isLoading: any; }) => val.isLoading);
