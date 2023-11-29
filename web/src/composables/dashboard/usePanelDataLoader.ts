@@ -17,6 +17,7 @@ import queryService from "../../services/search";
 import { useStore } from "vuex";
 import { addLabelToPromQlQuery } from "@/utils/query/promQLUtils";
 import { addLabelsToSQlQuery } from "@/utils/query/sqlUtils";
+import { getStreamFromQuery } from "../../utils/query/sqlUtils";
 
 const formatInterval = (interval: any) => {
   switch(true) {
@@ -564,18 +565,21 @@ console.log("variablesData(())", variablesData.value?.values);
       //   },
       // ];
 
-      adHocVariables.forEach((variable: any) => {
+      const queryStream = getStreamFromQuery(query);
+       
+      const applicableAdHocVariables = adHocVariables.filter((it: any) => {
+        return it?.streams?.find((it: any) => it.name == queryStream)
+      })
+
+      applicableAdHocVariables.forEach((variable: any) => {
         metadata.push({
-          type: 'dynamicVariable',
+          type: "dynamicVariable",
           name: variable.name,
           value: variable.value,
-          operator: variable.operator
-        })
+          operator: variable.operator,
+        });
       });
-      query = addLabelsToSQlQuery(
-        query,
-        adHocVariables
-      );
+      query = addLabelsToSQlQuery(query, applicableAdHocVariables);
       
       console.log("querySQL", query);
     }
@@ -688,10 +692,15 @@ console.log("variablesData(())", variablesData.value?.values);
 
       // let's check for the ad-hoc variables
       const shouldITriggerTheQueryForAdHocVariables = (() => {
+        const sqlQueryStreams = panelSchema.value.queryType == 'sql' ? 
+          panelSchema.value.queries.map((q: any) => getStreamFromQuery(q.query))
+          : []
+
         const adHocVariables = variablesData.value?.values
           ?.filter((it: any) => it.type === "ad-hoc-filters")
           ?.map((it: any) => it?.value).flat()
           ?.filter((it: any) => it?.operator && it?.name && it?.value)
+          ?.filter((it: any) => panelSchema.value.queryType == 'sql' ? it.streams.find((it: any) => sqlQueryStreams.includes(it?.name)) : true)
 
         // if number of adHocVariables have changed, fire the query
         if(adHocVariables.length !== currentAdHocVariablesData.length) {

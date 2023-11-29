@@ -51,7 +51,7 @@
 
 <script lang="ts">
 // @ts-nocheck
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, toRaw } from "vue";
 import { useStore } from "vuex";
 import { useQuasar } from "quasar";
 import { useI18n } from "vue-i18n";
@@ -92,7 +92,7 @@ export default defineComponent({
     const variablesData = reactive({});
     const variablesDataUpdated = (data: any) => {
       Object.assign(variablesData, data);
-      emit("variablesData", JSON.parse(JSON.stringify(variablesData)));
+      emit("variablesData", structuredClone(toRaw(variablesData)));
     };
 
     // save the dashboard value
