@@ -22,6 +22,11 @@
           {{ props.data.title }}
         </div>
         <q-space />
+        <q-icon v-if="dependentAdHocVariable" name="info">
+          <q-tooltip>
+            Some dynamic variables are not applied. Click to check meta data
+          </q-tooltip>
+            </q-icon>
         <q-btn-dropdown dense flat label="" no-caps v-if="!viewOnly">
           <q-list dense>
             <q-item clickable v-close-popup="true" @click="onPanelModifyClick('EditPanel')">
@@ -66,7 +71,7 @@
 </template>
 
 <script  lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, computed } from "vue";
 import PanelSchemaRenderer from "./PanelSchemaRenderer.vue";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
@@ -155,6 +160,7 @@ export default defineComponent({
       metaDataValue,
       metaData,
       showViewPanel,
+      dependentAdHocVariable
     };
   },
   methods: {
