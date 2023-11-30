@@ -30,15 +30,15 @@
             <div class="row">
               <div class="textbox col">
                 <q-input v-model="variableData.name" class="showLabelOnTop q-mr-sm"
-                  :label="(variableData.type !== 'ad-hoc-filters' ? t('dashboard.nameOfVariable') : t('dashboard.adhoclabelOfVariable')) + ' *'" dense filled outlined stack-label
+                  :label=" t('dashboard.nameOfVariable')  + ' *'" dense filled outlined stack-label
                   :rules="[(val: any) => !!(val.trim()) || 'Field is required!']"></q-input>
               </div>
-              <div class="textbox col" v-if="variableData.type !== 'ad-hoc-filters'">
+              <div class="textbox col">
                 <q-input v-model="variableData.label" class="showLabelOnTop" :label="t('dashboard.labelOfVariable')" dense
                   filled outlined stack-label></q-input>
               </div>
             </div>
-            <div class="text-body1 text-bold q-mt-lg">
+            <div class="text-body1 text-bold q-mt-lg" v-if="variableData.type !== 'ad-hoc-filters'">
               {{ t("dashboard.extraOptions") }}
             </div>
             <div v-if="variableData.type == 'query_values'">
