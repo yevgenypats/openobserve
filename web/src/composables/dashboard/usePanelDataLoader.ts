@@ -373,7 +373,7 @@ export const usePanelDataLoader = (
    */
   const isQueryDependentOnTheVariables = () => {
     const dependentVariables = variablesData.value?.values
-      ?.filter((it: any) => it.type != 'ad-hoc-filters') // ad hoc filters are not considered as dependent filters as they are globally applied
+      ?.filter((it: any) => it.type != 'dynamicFilters') // ad hoc filters are not considered as dependent filters as they are globally applied
       ?.filter((it: any) =>
         panelSchema?.value?.queries
           ?.map((q: any) => q?.query?.includes(`$${it.name}`)) // check if the query includes the variable
@@ -390,7 +390,7 @@ export const usePanelDataLoader = (
   const canRunQueryBasedOnVariables = () => {
 
     const dependentVariables = variablesData.value?.values
-      ?.filter((it: any) => it.type != 'ad-hoc-filters') // ad hoc filters are not considered as dependent filters as they are globally applied
+      ?.filter((it: any) => it.type != 'dynamicFilters') // ad hoc filters are not considered as dependent filters as they are globally applied
       ?.filter((it: any) =>
         panelSchema?.value?.queries
           ?.map((q: any) => {
@@ -513,7 +513,7 @@ console.log("variablesData(())", variablesData.value?.values);
     const metadata : any[] = []
 
     const adHocVariables = variablesData.value?.values
-      ?.filter((it: any) => it.type === "ad-hoc-filters")
+      ?.filter((it: any) => it.type === "dynamicFilters")
       ?.map((it: any) => it?.value).flat()
       ?.filter((it: any) => it?.operator && it?.name && it?.value)
       
@@ -659,7 +659,7 @@ console.log("variablesData(())", variablesData.value?.values);
       const shouldITriggerTheQueryForOtherVariables = (() => {
         // 1. get the dependent variables list
         const newDependentVariablesData = variablesData.value?.values
-          ?.filter((it: any) => it.type != 'ad-hoc-filters') // ad hoc filters are not considered as dependent filters as they are globally applied
+          ?.filter((it: any) => it.type != 'dynamicFilters') // ad hoc filters are not considered as dependent filters as they are globally applied
           ?.filter(
             (it: any) =>
               panelSchema.value.queries
@@ -697,7 +697,7 @@ console.log("variablesData(())", variablesData.value?.values);
           : []
 
         const adHocVariables = variablesData.value?.values
-          ?.filter((it: any) => it.type === "ad-hoc-filters")
+          ?.filter((it: any) => it.type === "dynamicFilters")
           ?.map((it: any) => it?.value).flat()
           ?.filter((it: any) => it?.operator && it?.name && it?.value)
           ?.filter((it: any) => panelSchema.value.queryType == 'sql' ? it.streams.find((it: any) => sqlQueryStreams.includes(it?.name)) : true)

@@ -66,7 +66,7 @@
       :variablesData="props.variablesData"
       @metadata-update="metaDataValue"
     ></PanelSchemaRenderer>
-    <MetaDataDialog :metaData="metaData" v-if="metaData" v-model="showViewPanel"></MetaDataDialog>
+    <MetaDataDialog :metaData="metaData" :data="props.data" v-if="metaData" v-model="showViewPanel"></MetaDataDialog>
   </div>
 </template>
 
@@ -102,7 +102,7 @@ export default defineComponent({
 
     const dependentAdHocVariable = computed(()=>{
       const adhocVariables = props.variablesData.values
-        ?.filter((it: any) => it.type === "ad-hoc-filters")
+        ?.filter((it: any) => it.type === "dynamicFilters")
         ?.map((it: any) => it?.value).flat()
         ?.filter((it: any) => it?.operator && it?.name && it?.value)
       console.log("adhocVariables==", adhocVariables);

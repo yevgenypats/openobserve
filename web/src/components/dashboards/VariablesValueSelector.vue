@@ -35,7 +35,7 @@
             </template>
         </q-select>
       </div>
-      <div v-if="item.type == 'ad-hoc-filters'">
+      <div v-if="item.type == 'dynamicFilters'">
         <VariableAdHocValueSelector v-model="item.value" :variableItem="item" />
       </div>
     </div>
@@ -96,7 +96,7 @@ export default defineComponent({
             let oldVariableValue = JSON.parse(JSON.stringify(variablesData.values));
             if(!oldVariableValue.length) {  
                 const dynamicVariables = props.variablesConfig?.list
-                    ?.filter((it: any) => it.type == "ad-hoc-filters")
+                    ?.filter((it: any) => it.type == "dynamicFilters")
                     ?.map((it: any) => it.name) || []
                 oldVariableValue = Object.keys(props?.initialVariableValues ?? []).map((key: any) => ({
                     name: key,
@@ -205,8 +205,8 @@ export default defineComponent({
                         return obj;
                         // break;
                     }
-                    case "ad-hoc-filters": {
-                        console.log("ad-hoc-filters");
+                    case "dynamicFilters": {
+                        console.log("dynamicFilters");
                         
                         obj.isLoading = true;  // Set loading state
 

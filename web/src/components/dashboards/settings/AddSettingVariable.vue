@@ -38,7 +38,7 @@
                   filled outlined stack-label></q-input>
               </div>
             </div>
-            <div class="text-body1 text-bold q-mt-lg" v-if="variableData.type !== 'ad-hoc-filters'">
+            <div class="text-body1 text-bold q-mt-lg" v-if="variableData.type !== 'dynamicFilters'">
               {{ t("dashboard.extraOptions") }}
             </div>
             <div v-if="variableData.type == 'query_values'">
@@ -163,7 +163,7 @@ export default defineComponent({
       },
       {
         label: t("dashboard.ad-hoc-variable"),
-        value: 'ad-hoc-filters'
+        value: 'dynamicFilters'
       }
     ])
 
