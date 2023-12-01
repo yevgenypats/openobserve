@@ -16,7 +16,8 @@
 <template>
   <div class="panelcontainer">
     <div class="drag-allow">
-      <q-bar :class="store.state.theme == 'dark' ? 'dark-mode' : 'bg-white'" dense class="q-px-xs" style="border-top-left-radius: 3px; border-top-right-radius: 3px;">
+      <q-bar :class="store.state.theme == 'dark' ? 'dark-mode' : 'bg-white'" dense class="q-px-xs"
+        style="border-top-left-radius: 3px; border-top-right-radius: 3px;">
         <q-icon v-if="!viewOnly" name="drag_indicator" />
         <div :title="props.data.title" class="panelHeader">
           {{ props.data.title }}
@@ -24,9 +25,10 @@
         <q-space />
         <q-icon v-if="dependentAdHocVariable" name="info" style="cursor: pointer" @click="showViewPanel = true">
           <q-tooltip anchor="bottom right" self="top right" max-width="220px">
-            Some dynamic variables are not applied because the field is not present in the query's stream. Open Query Inspector to see all the details of the variables and queries executed to render this panel
+            Some dynamic variables are not applied because the field is not present in the query's stream. Open Query
+            Inspector to see all the details of the variables and queries executed to render this panel
           </q-tooltip>
-            </q-icon>
+        </q-icon>
         <q-btn-dropdown dense flat label="" no-caps v-if="!viewOnly">
           <q-list dense>
             <q-item clickable v-close-popup="true" @click="onPanelModifyClick('EditPanel')">
@@ -44,28 +46,18 @@
                 <q-item-label class="q-pa-sm">Delete Panel</q-item-label>
               </q-item-section>
             </q-item>
-            <q-item
-              clickable
-              v-if="metaData && metaData.queries.length > 0"  
-              v-close-popup="true"
-              @click="showViewPanel= true"
-            >
-            <q-item-section>
-              <q-item-label class="q-pa-sm">Query Inspector</q-item-label>
-            </q-item-section>
+            <q-item clickable v-if="metaData && metaData.queries.length > 0" v-close-popup="true"
+              @click="showViewPanel = true">
+              <q-item-section>
+                <q-item-label class="q-pa-sm">Query Inspector</q-item-label>
+              </q-item-section>
             </q-item>
           </q-list>
         </q-btn-dropdown>
       </q-bar>
     </div>
-    <PanelSchemaRenderer
-      :panelSchema="props.data"
-      :selectedTimeObj="props.selectedTimeDate"
-      :width="props.width"
-      :height="props.height"
-      :variablesData="props.variablesData"
-      @metadata-update="metaDataValue"
-    ></PanelSchemaRenderer>
+    <PanelSchemaRenderer :panelSchema="props.data" :selectedTimeObj="props.selectedTimeDate" :width="props.width"
+      :height="props.height" :variablesData="props.variablesData" @metadata-update="metaDataValue"></PanelSchemaRenderer>
     <MetaDataDialog :metaData="metaData" :data="props.data" v-if="metaData" v-model="showViewPanel"></MetaDataDialog>
   </div>
 </template>
@@ -82,12 +74,12 @@ import MetaDataDialog from "@/components/dashboards/MetaDataDialog.vue";
 export default defineComponent({
   name: "PanelContainer",
   emits: ["onDeletePanel"],
-  props: ["data", "selectedTimeDate", "viewOnly","width", "height", "variablesData","dashboardId", "metaData"],
+  props: ["data", "selectedTimeDate", "viewOnly", "width", "height", "variablesData", "dashboardId", "metaData"],
   components: {
     PanelSchemaRenderer,
     MetaDataDialog
-},
-  setup(props) {    
+  },
+  setup(props) {
     const store = useStore();
     const router = useRouter();
     const route = useRoute();
@@ -97,12 +89,12 @@ export default defineComponent({
     const metaDataValue = (metadata: any) => {
       metaData.value = metadata;
       console.log("metadata panel", metadata);
-      
+
     };
 
-    const dependentAdHocVariable = computed(()=>{
+    const dependentAdHocVariable = computed(() => {
       const adhocVariables = props.variablesData.values
-        ?.filter((it: any) => it.type === "dynamicFilters")
+        ?.filter((it: any) => it.type === "dynamic_filters")
         ?.map((it: any) => it?.value).flat()
         ?.filter((it: any) => it?.operator && it?.name && it?.value)
       console.log("adhocVariables==", adhocVariables);
@@ -112,11 +104,11 @@ export default defineComponent({
         return vars.length == adhocVariables.length
       });
       console.log("metaDataDynamic====", metaDataDynamic);
-        return !metaDataDynamic
+      return !metaDataDynamic
     })
 
     //for edit panel
-    const onEditPanel = (data:any) => {
+    const onEditPanel = (data: any) => {
       return router.push({
         path: "/dashboards/add_panel",
         query: { dashboard: String(route.query.dashboard), panelId: data.id, folder: route.query.folder ?? "default" },
@@ -124,38 +116,38 @@ export default defineComponent({
     }
     //create a duplicate panel
     const onDuplicatePanel = async (data: any): Promise<void> => {
-  
+
       // Show a loading spinner notification.
       const dismiss = $q.notify({
         spinner: true,
         message: "Please wait...",
         timeout: 2000,
       });
-  
+
       // Generate a unique panel ID.
       const panelId = "Panel_ID" + Math.floor(Math.random() * (99999 - 10 + 1)) + 10;
-  
+
       // Duplicate the panel data with the new ID.
       const panelData = JSON.parse(JSON.stringify(data));
       panelData.id = panelId;
-  
+
       try {
         // Add the duplicated panel to the dashboard.
         await addPanel(store, route.query.dashboard, panelData, route.query.folder ?? "default");
-  
+
         // Show a success notification.
         $q.notify({
           type: "positive",
           message: `Panel Duplicated Successfully`,
         });
-  
+
         // Navigate to the new panel.
         router.push({
           path: "/dashboards/add_panel",
           query: { dashboard: String(route.query.dashboard), panelId: panelId, folder: route.query.folder ?? "default" },
         });
         return;
-      } catch (err:any) {
+      } catch (err: any) {
         // Show an error notification.
         $q.notify({
           type: "negative",
@@ -180,10 +172,10 @@ export default defineComponent({
   },
   methods: {
     onPanelModifyClick(evt: any) {
-      if(evt == 'EditPanel'){
+      if (evt == 'EditPanel') {
         this.onEditPanel(this.props.data)
       }
-      else if(evt == 'DeletePanel') {
+      else if (evt == 'DeletePanel') {
         this.$emit('onDeletePanel', this.props.data.id)
       }
       else if (evt == 'DuplicatePanel') {
@@ -200,7 +192,8 @@ export default defineComponent({
 .panelcontainer {
   height: calc(100% - 24px);
 }
-.panelHeader{
+
+.panelHeader {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

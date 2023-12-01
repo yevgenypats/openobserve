@@ -30,7 +30,7 @@
             <div class="row">
               <div class="textbox col">
                 <q-input v-model="variableData.name" class="showLabelOnTop q-mr-sm"
-                  :label=" t('dashboard.nameOfVariable')  + ' *'" dense filled outlined stack-label
+                  :label="t('dashboard.nameOfVariable') + ' *'" dense filled outlined stack-label
                   :rules="[(val: any) => !!(val.trim()) || 'Field is required!']"></q-input>
               </div>
               <div class="textbox col">
@@ -38,7 +38,7 @@
                   filled outlined stack-label></q-input>
               </div>
             </div>
-            <div class="text-body1 text-bold q-mt-lg" v-if="variableData.type !== 'dynamicFilters'">
+            <div class="text-body1 text-bold q-mt-lg" v-if="variableData.type !== 'dynamic_filters'">
               {{ t("dashboard.extraOptions") }}
             </div>
             <div v-if="variableData.type == 'query_values'">
@@ -49,8 +49,8 @@
                   :rules="[(val: any) => !!val || 'Field is required!']"></q-select>
                 <q-select v-model="variableData.query_data.stream" :label="t('dashboard.selectIndex') + ' *'"
                   :options="streamsFilteredOptions" input-debounce="0" behavior="menu" use-input filled borderless dense
-                  stack-label @filter="streamsFilterFn" @update:model-value="streamUpdated"
-                  option-value="name" option-label="name" emit-value class="textbox showLabelOnTop col no-case"
+                  stack-label @filter="streamsFilterFn" @update:model-value="streamUpdated" option-value="name"
+                  option-label="name" emit-value class="textbox showLabelOnTop col no-case"
                   :rules="[(val: any) => !!val || 'Field is required!']">
                 </q-select>
               </div>
@@ -60,14 +60,14 @@
                 option-value="name" option-label="name" emit-value :rules="[(val: any) => !!val || 'Field is required!']">
               </q-select>
               <div>
-                <q-input class="showLabelOnTop" type="number" v-model.number="variableData.query_data.max_record_size" :label="t('dashboard.DefaultSize')"
-                dense filled outlined stack-label>
+                <q-input class="showLabelOnTop" type="number" v-model.number="variableData.query_data.max_record_size"
+                  :label="t('dashboard.DefaultSize')" dense filled outlined stack-label>
                   <q-btn padding="xs" round flat class="q-ml-sm" no-caps icon="info">
                     <q-tooltip>{{ t('dashboard.maxRecordSize') }}</q-tooltip>
                   </q-btn>
                 </q-input>
               </div>
-              
+
             </div>
           </div>
           <div class="textbox" v-if="['constant'].includes(variableData.type)">
@@ -75,8 +75,8 @@
               dense filled outlined stack-label :rules="[(val: any) => !!(val.trim()) || 'Field is required!']"></q-input>
           </div>
           <div class="textbox" v-if="['textbox'].includes(variableData.type)">
-            <q-input class="showLabelOnTop" v-model="variableData.value" :label="t('dashboard.DefaultValue')"
-              dense filled outlined stack-label></q-input>
+            <q-input class="showLabelOnTop" v-model="variableData.value" :label="t('dashboard.DefaultValue')" dense filled
+              outlined stack-label></q-input>
           </div>
           <!-- show the auto add variables for the custom fields -->
           <div v-if="variableData.type == 'custom'">
@@ -99,8 +99,8 @@
             <q-btn class="q-mb-md text-bold" :label="t('dashboard.cancel')" text-color="light-text" padding="sm md"
               no-caps @click="close" />
             <div>
-              <q-btn type="submit" :loading="saveVariableApiCall.isLoading.value" class="q-mb-md text-bold no-border q-ml-md"
-                color="secondary" padding="sm xl" no-caps>Save</q-btn>
+              <q-btn type="submit" :loading="saveVariableApiCall.isLoading.value"
+                class="q-mb-md text-bold no-border q-ml-md" color="secondary" padding="sm xl" no-caps>Save</q-btn>
             </div>
           </div>
         </q-form>
@@ -163,11 +163,11 @@ export default defineComponent({
       },
       {
         label: t("dashboard.ad-hoc-variable"),
-        value: 'dynamicFilters'
+        value: 'dynamic_filters'
       }
     ])
 
-    const variableData : any= reactive({
+    const variableData: any = reactive({
       name: "",
       label: "",
       type: "query_values",
@@ -215,48 +215,48 @@ export default defineComponent({
       const dashId = route.query.dashboard + "";
 
       if (editMode.value) {
-       try {
-        
-         await updateVariable(
-           store,
-           dashId,
-           props.variableName,
-           toRaw(variableData),
-           route.query.folder ?? "default"
-         );
-         emit('save');
+        try {
 
-       } catch (error:any) {
-        $q.notify({
+          await updateVariable(
+            store,
+            dashId,
+            props.variableName,
+            toRaw(variableData),
+            route.query.folder ?? "default"
+          );
+          emit('save');
+
+        } catch (error: any) {
+          $q.notify({
             type: "negative",
             message: error.message,
             timeout: 2000,
           });
-       }
+        }
 
-        
+
       } else {
 
         if (variableData.type !== 'query_values') {
           delete variableData["query_data"];
         }
 
-      try {
-        await addVariable(
-        store,
-        dashId,
-        variableData,
-        route.query.folder ?? "default"
-        );
-        emit('save');
-      } 
-      catch (error:any) {
+        try {
+          await addVariable(
+            store,
+            dashId,
+            variableData,
+            route.query.folder ?? "default"
+          );
+          emit('save');
+        }
+        catch (error: any) {
           $q.notify({
             type: "negative",
             message: error.message,
             timeout: 2000,
           });
-      }
+        }
 
       }
     }
@@ -271,10 +271,10 @@ export default defineComponent({
           .catch((err: any) => {
 
             $q.notify({
-                type: "negative",
-                message: JSON.stringify(
-                    err.response.data["error"] || "Dashboard creation failed."
-                ),
+              type: "negative",
+              message: JSON.stringify(
+                err.response.data["error"] || "Dashboard creation failed."
+              ),
             });
           });
       });
@@ -286,7 +286,7 @@ export default defineComponent({
         true
       ).then((res) => {
         data.schemaResponse = res.data?.list || [];
-        if(editMode.value) {
+        if (editMode.value) {
           // set the dropdown values
           streamTypeUpdated()
           streamUpdated()

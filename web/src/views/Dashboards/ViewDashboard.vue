@@ -19,36 +19,16 @@
   <q-page class="q-pa-md" :key="store.state.selectedOrganization.identifier">
     <div class="flex justify-between items-center q-pa-sm">
       <div class="flex">
-        <q-btn
-          no-caps
-          @click="goBackToDashboardList"
-          padding="xs"
-          outline
-          icon="arrow_back_ios_new"
-        />
+        <q-btn no-caps @click="goBackToDashboardList" padding="xs" outline icon="arrow_back_ios_new" />
         <span class="q-table__title q-mx-md q-mt-xs">{{
           currentDashboardData.data.title
         }}</span>
       </div>
       <div class="flex">
-        <q-btn
-          outline
-          padding="xs"
-          no-caps
-          icon="add"
-          @click="addPanelData"
-          data-test="dashboard-panel-add"
-        >
+        <q-btn outline padding="xs" no-caps icon="add" @click="addPanelData" data-test="dashboard-panel-add">
           <q-tooltip>{{ t("panel.add") }}</q-tooltip>
         </q-btn>
-        <q-btn
-          outline
-          padding="xs"
-          class="q-ml-sm"
-          no-caps
-          icon="settings"
-          @click="openSettingsDialog"
-        >
+        <q-btn outline padding="xs" class="q-ml-sm" no-caps icon="settings" @click="openSettingsDialog">
           <q-tooltip>{{ t("dashboard.setting") }}</q-tooltip>
         </q-btn>
         <!-- <DateTimePicker 
@@ -56,45 +36,18 @@
           ref="refDateTime"
           v-model="selectedDate"
         /> -->
-        <DateTimePickerDashboard
-          ref="dateTimePicker"
-          class="q-ml-sm"
-          v-model="selectedDate"
-        />
-        <AutoRefreshInterval
-          v-model="refreshInterval"
-          trigger
-          @trigger="refreshData"
-        />
-        <q-btn
-          class="q-ml-sm"
-          outline
-          padding="xs"
-          no-caps
-          icon="refresh"
-          @click="refreshData"
-        >
+        <DateTimePickerDashboard ref="dateTimePicker" class="q-ml-sm" v-model="selectedDate" />
+        <AutoRefreshInterval v-model="refreshInterval" trigger @trigger="refreshData" />
+        <q-btn class="q-ml-sm" outline padding="xs" no-caps icon="refresh" @click="refreshData">
         </q-btn>
-        <ExportDashboard
-          :dashboardId="currentDashboardData.data?.dashboardId"
-        />
+        <ExportDashboard :dashboardId="currentDashboardData.data?.dashboardId" />
       </div>
     </div>
     <q-separator></q-separator>
-    <RenderDashboardCharts
-      @variablesData="variablesDataUpdated"
-      :initialVariableValues="initialVariableValues"
-      :viewOnly="false"
-      :dashboardData="currentDashboardData.data"
-      :currentTimeObj="currentTimeObj"
-      @onDeletePanel="onDeletePanel"
-    />
-    <q-dialog
-      v-model="showDashboardSettingsDialog"
-      position="right"
-      full-height
-      maximized
-    >
+    <RenderDashboardCharts @variablesData="variablesDataUpdated" :initialVariableValues="initialVariableValues"
+      :viewOnly="false" :dashboardData="currentDashboardData.data" :currentTimeObj="currentTimeObj"
+      @onDeletePanel="onDeletePanel" />
+    <q-dialog v-model="showDashboardSettingsDialog" position="right" full-height maximized>
       <DashboardSettings @refresh="loadDashboard" />
     </q-dialog>
   </q-page>
@@ -149,8 +102,8 @@ export default defineComponent({
       const variableObj = {};
       data.values.forEach((variable) => {
         console.log("variableeee", variable);
-        
-        if (variable.type === 'dynamicFilters') {
+
+        if (variable.type === 'dynamic_filters') {
           const filters = ((variable.value) || []).filter((item: any) => item.name && item.operator && item.value);
           const encodedFilters = filters.map((item: any) => ({
             name: item.name,
@@ -158,7 +111,7 @@ export default defineComponent({
             value: item.value
           }))
           variableObj[`var-${variable.name}`] = encodeURIComponent(JSON.stringify(encodedFilters))
-        }  else {
+        } else {
           variableObj[`var-${variable.name}`] = variable.value;
         }
       });
@@ -221,8 +174,8 @@ export default defineComponent({
       valueType: params.period
         ? "relative"
         : params.from && params.to
-        ? "absolute"
-        : "relative",
+          ? "absolute"
+          : "relative",
       startTime: params.from ? params.from : null,
       endTime: params.to ? params.to : null,
       relativeTimePeriod: params.period ? params.period : null,

@@ -20,104 +20,104 @@ import { addLabelsToSQlQuery } from "@/utils/query/sqlUtils";
 import { getStreamFromQuery } from "../../utils/query/sqlUtils";
 
 const formatInterval = (interval: any) => {
-  switch(true) {
+  switch (true) {
     // 0.01s
     case interval <= 10:
-      return {value : 1, unit : "ms"} // 0.001s
+      return { value: 1, unit: "ms" }; // 0.001s
     // 0.015s
     case interval <= 15:
-      return {value : 10, unit : "ms"}  // 0.01s
+      return { value: 10, unit: "ms" }; // 0.01s
     // 0.035s
     case interval <= 35:
-      return {value : 20, unit : "ms"}  // 0.02s
+      return { value: 20, unit: "ms" }; // 0.02s
     // 0.075s
     case interval <= 75:
-      return {value : 50, unit : "ms"}  // 0.05s
+      return { value: 50, unit: "ms" }; // 0.05s
     // 0.15s
     case interval <= 150:
-      return {value : 100, unit : "ms"}  // 0.1s
+      return { value: 100, unit: "ms" }; // 0.1s
     // 0.35s
     case interval <= 350:
-      return {value : 200, unit : "ms"}  // 0.2s
+      return { value: 200, unit: "ms" }; // 0.2s
     // 0.75s
     case interval <= 750:
-      return {value : 500, unit : "ms"}  // 0.5s
+      return { value: 500, unit: "ms" }; // 0.5s
     // 1.5s
     case interval <= 1500:
-      return {value : 1, unit : "s"}  // 1s
+      return { value: 1, unit: "s" }; // 1s
     // 3.5s
     case interval <= 3500:
-      return {value : 2, unit : "s"}  // 2s
+      return { value: 2, unit: "s" }; // 2s
     // 7.5s
     case interval <= 7500:
-      return {value : 5, unit : "s"}  // 5s
+      return { value: 5, unit: "s" }; // 5s
     // 12.5s
     case interval <= 12500:
-      return {value : 10, unit : "s"}  // 10s
+      return { value: 10, unit: "s" }; // 10s
     // 17.5s
     case interval <= 17500:
-      return {value : 15, unit : "s"}  // 15s
+      return { value: 15, unit: "s" }; // 15s
     // 25s
     case interval <= 25000:
-      return {value : 20, unit : "s"}  // 20s
+      return { value: 20, unit: "s" }; // 20s
     // 45s
     case interval <= 45000:
-      return {value : 30, unit : "s"}  // 30s
+      return { value: 30, unit: "s" }; // 30s
     // 1.5m
     case interval <= 90000:
-      return {value : 1, unit : "m"}  // 1m
+      return { value: 1, unit: "m" }; // 1m
     // 3.5m
     case interval <= 210000:
-      return {value : 2, unit : "m"}  // 2m
+      return { value: 2, unit: "m" }; // 2m
     // 7.5m
     case interval <= 450000:
-      return {value : 5, unit : "m"}  // 5m
+      return { value: 5, unit: "m" }; // 5m
     // 12.5m
     case interval <= 750000:
-      return {value : 10, unit : "m"}  // 10m
+      return { value: 10, unit: "m" }; // 10m
     // 17.5m
     case interval <= 1050000:
-      return {value : 15, unit : "m"}  // 15m
+      return { value: 15, unit: "m" }; // 15m
     // 25m
     case interval <= 1500000:
-      return {value : 20, unit : "m"}  // 20m
+      return { value: 20, unit: "m" }; // 20m
     // 45m
     case interval <= 2700000:
-      return {value : 30, unit : "m"}  // 30m
+      return { value: 30, unit: "m" }; // 30m
     // 1.5h
     case interval <= 5400000:
-      return {value : 1, unit : "h"}  // 1h
+      return { value: 1, unit: "h" }; // 1h
     // 2.5h
     case interval <= 9000000:
-      return {value : 2, unit : "h"}  // 2h
+      return { value: 2, unit: "h" }; // 2h
     // 4.5h
     case interval <= 16200000:
-      return {value : 3, unit : "h"}  // 3h
+      return { value: 3, unit: "h" }; // 3h
     // 9h
     case interval <= 32400000:
-      return {value : 6, unit : "h"}  // 6h
+      return { value: 6, unit: "h" }; // 6h
     // 24h
     case interval <= 86400000:
-      return {value : 12, unit : "h"}  // 12h
+      return { value: 12, unit: "h" }; // 12h
     // 48h
     case interval <= 172800000:
-      return {value : 24, unit : "h"}  // 24h
+      return { value: 24, unit: "h" }; // 24h
     // 1w
     case interval <= 604800000:
-      return {value : 24, unit : "h"}  // 24h
+      return { value: 24, unit: "h" }; // 24h
     // 3w
     case interval <= 1814400000:
-      return {value : 1, unit : "w"}  // 1w
+      return { value: 1, unit: "w" }; // 1w
     // 2y
     case interval < 3628800000:
-      return {value : 30, unit : "d"}  // 30d
+      return { value: 30, unit: "d" }; // 30d
     default:
-      return {value : 1, unit : "y"}  // 1y
-    }
-}
+      return { value: 1, unit: "y" }; // 1y
+  }
+};
 
 const getTimeInSecondsBasedOnUnit = (seconds: any, unit: any) => {
-  switch(true){
+  switch (true) {
     case unit === "ms":
       return seconds / 1000;
     case unit === "s":
@@ -134,25 +134,25 @@ const getTimeInSecondsBasedOnUnit = (seconds: any, unit: any) => {
       return seconds * 60 * 60 * 24 * 7 * 12;
     default:
       return seconds;
-  }  
-}
+  }
+};
 
 const formateRateInterval = (interval: any) => {
-  let formattedStr = ""
+  let formattedStr = "";
   const days = Math.floor(interval / (3600 * 24));
-  if( days > 0 ) formattedStr += days.toString() + "d";
+  if (days > 0) formattedStr += days.toString() + "d";
 
   const hours = Math.floor((interval % (3600 * 24)) / 3600);
-  if( hours > 0 ) formattedStr += hours.toString() + "h";
+  if (hours > 0) formattedStr += hours.toString() + "h";
 
   const minutes = Math.floor((interval % 3600) / 60);
-  if( minutes > 0 ) formattedStr += minutes.toString() + "m";
+  if (minutes > 0) formattedStr += minutes.toString() + "m";
 
   const remainingSeconds = interval % 60;
-  if( remainingSeconds > 0 ) formattedStr += remainingSeconds.toString() + "s";
+  if (remainingSeconds > 0) formattedStr += remainingSeconds.toString() + "s";
 
   return formattedStr;
-}
+};
 
 export const usePanelDataLoader = (
   panelSchema: any,
@@ -189,7 +189,6 @@ export const usePanelDataLoader = (
   let controller: AbortController | null = null;
 
   const loadData = async () => {
-
     isDirty.value = false;
     const controller = new AbortController();
     // state.loading = true;
@@ -209,10 +208,10 @@ export const usePanelDataLoader = (
       timestamps.start_time != "Invalid Date" &&
       timestamps.end_time != "Invalid Date"
     ) {
-      startISOTimestamp =
-        new Date(timestamps.start_time.toISOString()).getTime();
-      endISOTimestamp =
-        new Date(timestamps.end_time.toISOString()).getTime();
+      startISOTimestamp = new Date(
+        timestamps.start_time.toISOString()
+      ).getTime();
+      endISOTimestamp = new Date(timestamps.end_time.toISOString()).getTime();
     } else {
       return;
     }
@@ -221,7 +220,6 @@ export const usePanelDataLoader = (
 
     // Check if the query type is "promql"
     if (panelSchema.value.queryType == "promql") {
-
       // Iterate through each query in the panel schema
       const queryPromises = panelSchema.value.queries?.map(async (it: any) => {
         console.log("queryPromises", it);
@@ -259,14 +257,13 @@ export const usePanelDataLoader = (
           .then((res) => {
             // Set searchQueryData.data to the API response data
             state.errorDetail = "";
-            return {result: res.data.data, metadata: metadata};
+            return { result: res.data.data, metadata: metadata };
           })
           .catch((error) => {
             // Process API error for "promql"
             processApiError(error, "promql");
           });
       });
-
 
       // Wait for all query promises to resolve
       const queryResults = await Promise.all(queryPromises);
@@ -285,24 +282,23 @@ export const usePanelDataLoader = (
         async (it: any) => {
           console.log("sqlqueryPromise", it);
 
-          const {query: query1, metadata: metadata1} = replaceQueryValue(
-              it.query,
-              startISOTimestamp,
-              endISOTimestamp,
-              panelSchema.value.queryType
-            )
+          const { query: query1, metadata: metadata1 } = replaceQueryValue(
+            it.query,
+            startISOTimestamp,
+            endISOTimestamp,
+            panelSchema.value.queryType
+          );
 
-            console.log('query1', query1);
-            
+          console.log("query1", query1);
 
-          const {query: query2, metadata: metadata2} = applyAdhocVariables(
+          const { query: query2, metadata: metadata2 } = applyAdhocVariables(
             query1,
             panelSchema.value.queryType
           );
 
-          const query = query2
+          const query = query2;
           console.log("query2", query2);
-          
+
           const metadata = {
             originalQuery: it.query,
             query: query,
@@ -330,7 +326,7 @@ export const usePanelDataLoader = (
               // Set searchQueryData.data to the API response hits
               // state.data = res.data.hits;
               state.errorDetail = "";
-              return {result: res.data.hits, metadata: metadata};
+              return { result: res.data.hits, metadata: metadata };
             })
             .catch((error) => {
               // Process API error for "sql"
@@ -373,7 +369,7 @@ export const usePanelDataLoader = (
    */
   const isQueryDependentOnTheVariables = () => {
     const dependentVariables = variablesData.value?.values
-      ?.filter((it: any) => it.type != 'dynamicFilters') // ad hoc filters are not considered as dependent filters as they are globally applied
+      ?.filter((it: any) => it.type != "dynamic_filters") // ad hoc filters are not considered as dependent filters as they are globally applied
       ?.filter((it: any) =>
         panelSchema?.value?.queries
           ?.map((q: any) => q?.query?.includes(`$${it.name}`)) // check if the query includes the variable
@@ -388,9 +384,8 @@ export const usePanelDataLoader = (
    * @return {boolean} Whether the query can be executed based on the variables.
    */
   const canRunQueryBasedOnVariables = () => {
-
     const dependentVariables = variablesData.value?.values
-      ?.filter((it: any) => it.type != 'dynamicFilters') // ad hoc filters are not considered as dependent filters as they are globally applied
+      ?.filter((it: any) => it.type != "dynamic_filters") // ad hoc filters are not considered as dependent filters as they are globally applied
       ?.filter((it: any) =>
         panelSchema?.value?.queries
           ?.map((q: any) => {
@@ -421,47 +416,71 @@ export const usePanelDataLoader = (
    * @param {any} query - The query to be modified.
    * @return {any} The modified query with replaced values.
    */
-  const replaceQueryValue = (query: any, startISOTimestamp: any, endISOTimestamp: any, queryType: any) => {
-    console.log("replaceQueryValue", query, startISOTimestamp, endISOTimestamp, queryType);
+  const replaceQueryValue = (
+    query: any,
+    startISOTimestamp: any,
+    endISOTimestamp: any,
+    queryType: any
+  ) => {
+    console.log(
+      "replaceQueryValue",
+      query,
+      startISOTimestamp,
+      endISOTimestamp,
+      queryType
+    );
 
-    const metadata: any[] = []
-    
+    const metadata: any[] = [];
 
     //fixed variables value calculations
     //scrape interval by default 15 seconds
-    let scrapeInterval = store.state.organizationData.organizationSettings.scrape_interval ?? 15;
+    let scrapeInterval =
+      store.state.organizationData.organizationSettings.scrape_interval ?? 15;
 
     // timestamp in seconds / chart panel width
-    let __interval = ((endISOTimestamp - startISOTimestamp)/(chartPanelRef.value?.offsetWidth ?? 1000))/1000;
+    let __interval =
+      (endISOTimestamp - startISOTimestamp) /
+      (chartPanelRef.value?.offsetWidth ?? 1000) /
+      1000;
 
     // if less than 1, set it to 1
     // minimum will be 15000 millisecond
     // __interval = Math.max(15000, __interval);
-    
+
     // round interval
     const formattedInterval = formatInterval(__interval);
 
     // calculate rate interval in seconds
     // we need formatted interval value in seconds
-    let __rate_interval: any = Math.max( getTimeInSecondsBasedOnUnit(formattedInterval.value, formattedInterval.unit) + scrapeInterval , 4 * scrapeInterval);
+    let __rate_interval: any = Math.max(
+      getTimeInSecondsBasedOnUnit(
+        formattedInterval.value,
+        formattedInterval.unit
+      ) + scrapeInterval,
+      4 * scrapeInterval
+    );
 
     //get interval in ms
-    const __interval_ms = getTimeInSecondsBasedOnUnit(formattedInterval.value, formattedInterval.unit) * 1000;    
+    const __interval_ms =
+      getTimeInSecondsBasedOnUnit(
+        formattedInterval.value,
+        formattedInterval.unit
+      ) * 1000;
 
     const fixedVariables = [
       {
         name: "__interval_ms",
-        value: `${__interval_ms}ms`
+        value: `${__interval_ms}ms`,
       },
       {
         name: "__interval",
-        value: `${formattedInterval.value}${formattedInterval.unit}`
+        value: `${formattedInterval.value}${formattedInterval.unit}`,
       },
       {
         name: "__rate_interval",
-        value: `${formateRateInterval(__rate_interval)}`
-      }
-    ];    
+        value: `${formateRateInterval(__rate_interval)}`,
+      },
+    ];
 
     // replace fixed variables with its values
     fixedVariables?.forEach((variable: any) => {
@@ -475,56 +494,54 @@ export const usePanelDataLoader = (
         });
       }
       query = query.replaceAll(variableName, variableValue);
-    }); 
+    });
 
     if (currentDependentVariablesData?.length) {
-      console.log("currentDependentVariablesData", currentDependentVariablesData);
-
-      currentDependentVariablesData?.forEach((variable: any) => {        
-        const variableName = `$${variable.name}`;
-        const variableValue = variable.value;
-        if(query.includes(variableName)) {
-          metadata.push({
-            type: 'variable',
-            name: variable.name,
-            value: variable.value
-          })
-        }
-        query = query.replaceAll(variableName, variableValue);
-      });
-
-      return {query, metadata};
-    } else {
-      return {query, metadata};
-    }
-  };
-
       console.log(
         "currentDependentVariablesData",
         currentDependentVariablesData
       );
-  
-  
-  const applyAdhocVariables = (query: any, queryType: any) => {
 
-    console.log('checking for ad hoc variables');
-    
-console.log("variablesData(())", variablesData.value?.values);
-    const metadata : any[] = []
+      currentDependentVariablesData?.forEach((variable: any) => {
+        const variableName = `$${variable.name}`;
+        const variableValue = variable.value;
+        if (query.includes(variableName)) {
+          metadata.push({
+            type: "variable",
+            name: variable.name,
+            value: variable.value,
+          });
+        }
+        query = query.replaceAll(variableName, variableValue);
+      });
+
+      return { query, metadata };
+    } else {
+      return { query, metadata };
+    }
+  };
+
+  console.log("currentDependentVariablesData", currentDependentVariablesData);
+
+  const applyAdhocVariables = (query: any, queryType: any) => {
+    console.log("checking for ad hoc variables");
+
+    console.log("variablesData(())", variablesData.value?.values);
+    const metadata: any[] = [];
 
     const adHocVariables = variablesData.value?.values
-      ?.filter((it: any) => it.type === "dynamicFilters")
-      ?.map((it: any) => it?.value).flat()
-      ?.filter((it: any) => it?.operator && it?.name && it?.value)
-      
-      console.log("adHocVariables(())", adHocVariables);
+      ?.filter((it: any) => it.type === "dynamic_filters")
+      ?.map((it: any) => it?.value)
+      .flat()
+      ?.filter((it: any) => it?.operator && it?.name && it?.value);
+
+    console.log("adHocVariables(())", adHocVariables);
 
     if (!adHocVariables.length) {
       return { query, metadata };
     }
 
     console.log("ad hoc variables found");
-
 
     // continue if there are any adhoc queries
     if (queryType === "promql") {
@@ -539,11 +556,11 @@ console.log("variablesData(())", variablesData.value?.values);
 
       adHocVariables.forEach((variable: any) => {
         metadata.push({
-          type: 'dynamicVariable',
+          type: "dynamicVariable",
           name: variable.name,
           value: variable.value,
-          operator: variable.operator
-        })
+          operator: variable.operator,
+        });
         query = addLabelToPromQlQuery(
           query,
           variable.name,
@@ -566,10 +583,10 @@ console.log("variablesData(())", variablesData.value?.values);
       // ];
 
       const queryStream = getStreamFromQuery(query);
-       
+
       const applicableAdHocVariables = adHocVariables.filter((it: any) => {
-        return it?.streams?.find((it: any) => it.name == queryStream)
-      })
+        return it?.streams?.find((it: any) => it.name == queryStream);
+      });
 
       applicableAdHocVariables.forEach((variable: any) => {
         metadata.push({
@@ -580,11 +597,11 @@ console.log("variablesData(())", variablesData.value?.values);
         });
       });
       query = addLabelsToSQlQuery(query, applicableAdHocVariables);
-      
+
       console.log("querySQL", query);
     }
 
-    return {query, metadata};
+    return { query, metadata };
   };
 
   /**
@@ -596,7 +613,6 @@ console.log("variablesData(())", variablesData.value?.values);
   const processApiError = async (error: any, type: any) => {
     switch (type) {
       case "promql": {
-
         const errorDetailValue = error.response?.data?.error || error.message;
         const trimmedErrorMessage =
           errorDetailValue.length > 300
@@ -607,7 +623,9 @@ console.log("variablesData(())", variablesData.value?.values);
       }
       case "sql": {
         const errorDetailValue =
-          error.response?.data.error_detail || error.response?.data.message || error.message;
+          error.response?.data.error_detail ||
+          error.response?.data.message ||
+          error.message;
         const trimmedErrorMessage =
           errorDetailValue.length > 300
             ? errorDetailValue.slice(0, 300) + " ..."
@@ -626,7 +644,6 @@ console.log("variablesData(())", variablesData.value?.values);
   watch(
     () => isVisible.value,
     async () => {
-
       if (
         isVisible.value &&
         isDirty.value &&
@@ -647,8 +664,8 @@ console.log("variablesData(())", variablesData.value?.values);
   watch(
     () => variablesData.value?.values,
     () => {
-      console.log('variables values changed'); 
-      
+      console.log("variables values changed");
+
       // ensure the query is there
       if (!panelSchema.value.queries?.length) {
         return;
@@ -659,12 +676,11 @@ console.log("variablesData(())", variablesData.value?.values);
       const shouldITriggerTheQueryForOtherVariables = (() => {
         // 1. get the dependent variables list
         const newDependentVariablesData = variablesData.value?.values
-          ?.filter((it: any) => it.type != 'dynamicFilters') // ad hoc filters are not considered as dependent filters as they are globally applied
-          ?.filter(
-            (it: any) =>
-              panelSchema.value.queries
-                ?.map((q: any) => q?.query?.includes(`$${it.name}`))
-                ?.includes(true)
+          ?.filter((it: any) => it.type != "dynamic_filters") // ad hoc filters are not considered as dependent filters as they are globally applied
+          ?.filter((it: any) =>
+            panelSchema.value.queries
+              ?.map((q: any) => q?.query?.includes(`$${it.name}`))
+              ?.includes(true)
           );
 
         // if no variables, no need to rerun the query
@@ -684,30 +700,38 @@ console.log("variablesData(())", variablesData.value?.values);
           currentDependentVariablesData = JSON.parse(
             JSON.stringify(newDependentVariablesData)
           );
-          return true
+          return true;
         }
 
-        return false
-      })()
+        return false;
+      })();
 
       // let's check for the ad-hoc variables
       const shouldITriggerTheQueryForAdHocVariables = (() => {
-        const sqlQueryStreams = panelSchema.value.queryType == 'sql' ? 
-          panelSchema.value.queries.map((q: any) => getStreamFromQuery(q.query))
-          : []
+        const sqlQueryStreams =
+          panelSchema.value.queryType == "sql"
+            ? panelSchema.value.queries.map((q: any) =>
+                getStreamFromQuery(q.query)
+              )
+            : [];
 
         const adHocVariables = variablesData.value?.values
-          ?.filter((it: any) => it.type === "dynamicFilters")
-          ?.map((it: any) => it?.value).flat()
+          ?.filter((it: any) => it.type === "dynamic_filters")
+          ?.map((it: any) => it?.value)
+          .flat()
           ?.filter((it: any) => it?.operator && it?.name && it?.value)
-          ?.filter((it: any) => panelSchema.value.queryType == 'sql' ? it.streams.find((it: any) => sqlQueryStreams.includes(it?.name)) : true)
+          ?.filter((it: any) =>
+            panelSchema.value.queryType == "sql"
+              ? it.streams.find((it: any) => sqlQueryStreams.includes(it?.name))
+              : true
+          );
 
         // if number of adHocVariables have changed, fire the query
-        if(adHocVariables.length !== currentAdHocVariablesData.length) {
+        if (adHocVariables.length !== currentAdHocVariablesData.length) {
           currentAdHocVariablesData = JSON.parse(
             JSON.stringify(adHocVariables)
           );
-          return true
+          return true;
         }
 
         if (!adHocVariables.length) {
@@ -726,21 +750,27 @@ console.log("variablesData(())", variablesData.value?.values);
           currentAdHocVariablesData = JSON.parse(
             JSON.stringify(adHocVariables)
           );
-          return true
+          return true;
         }
 
-        return false
+        return false;
       })();
 
-      console.log("triggerCheck", shouldITriggerTheQueryForOtherVariables, shouldITriggerTheQueryForAdHocVariables);
+      console.log(
+        "triggerCheck",
+        shouldITriggerTheQueryForOtherVariables,
+        shouldITriggerTheQueryForAdHocVariables
+      );
 
-      if(shouldITriggerTheQueryForOtherVariables || shouldITriggerTheQueryForAdHocVariables) {
+      if (
+        shouldITriggerTheQueryForOtherVariables ||
+        shouldITriggerTheQueryForAdHocVariables
+      ) {
         isDirty.value = true;
         if (isVisible.value) {
           loadData();
         }
       }
-      
     },
     { deep: true }
   );
