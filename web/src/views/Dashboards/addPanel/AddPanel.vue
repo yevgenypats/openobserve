@@ -27,6 +27,7 @@
         </div>
       </div>
       <div class="flex q-gutter-sm">
+        <q-icon name="info" style="cursor: pointer" class="q-mt-lg" @click="showViewPanel = true"></q-icon>
         <DateTimePickerDashboard v-model="selectedDate" ref="dateTimePickerRef"/>
         <q-btn class="q-ml-md text-bold" outline padding="sm lg" color="red" no-caps :label="t('panel.discard')"
           @click="goBackToDashboardList" />
@@ -84,7 +85,8 @@
                       </div>
 
                       <div style="flex:1;">
-                        <PanelSchemaRenderer :key="dashboardPanelData.data.type" :panelSchema="chartData" :selectedTimeObj="dashboardPanelData.meta.dateTime" :variablesData="variablesData" :width="6" @error="handleChartApiError"/>
+                        <PanelSchemaRenderer @metadata-update="metaDataValue" :key="dashboardPanelData.data.type" :panelSchema="chartData" :selectedTimeObj="dashboardPanelData.meta.dateTime" :variablesData="variablesData" :width="6" @error="handleChartApiError"/>
+                        <MetaDataDialog :metaData="metaData" :data="panelTitle" v-if="metaData" v-model="showViewPanel"></MetaDataDialog>
                       </div>
                       <DashboardErrorsComponent :errors="errorData" />
                     </div>
@@ -152,9 +154,12 @@ import VariablesValueSelector from "../../../components/dashboards/VariablesValu
 import PanelSchemaRenderer from "../../../components/dashboards/PanelSchemaRenderer.vue";
 import { useLoading } from "@/composables/useLoading";
 import _ from "lodash-es";
+import MetaDataDialog from "@/components/dashboards/MetaDataDialog.vue";
 
 export default defineComponent({
   name: "AddPanel",
+  props: ["metaData"],
+
   components: {
     ChartSelection,
     FieldList,
@@ -165,9 +170,10 @@ export default defineComponent({
     ConfigPanel,
     VariablesValueSelector,
     PanelSchemaRenderer,
-    DashboardQueryEditor
+    DashboardQueryEditor,
+    MetaDataDialog
   },
-  setup() {
+  setup(props) {
     // This will be used to copy the chart data to the chart renderer component
     // This will deep copy the data object without reactivity and pass it on to the chart renderer
     const chartData = ref({});
@@ -185,6 +191,13 @@ export default defineComponent({
       errors: []
     })
     let variablesData :any = reactive({});
+    const metaData = ref();
+    const showViewPanel = ref(false);
+    const metaDataValue = (metadata: any) => {
+      metaData.value = metadata;
+      console.log("metadata panel", metadata);
+    };
+
     const variablesDataUpdated = (data: any) => {
       Object.assign(variablesData, data)
     }
@@ -380,6 +393,9 @@ export default defineComponent({
       }
     });
 
+    const panelTitle = computed(() => {
+      return { title: dashboardPanelData.data.title}
+    })
 
     //validate the data
     const isValid = (onlyChart = false) => {
@@ -703,7 +719,11 @@ export default defineComponent({
       resetAggregationFunction,
       isOutDated,
       store,
-      dateTimePickerRef
+      dateTimePickerRef,
+      showViewPanel,
+      metaDataValue,
+      metaData,
+      panelTitle
     };
   },
   methods: {
