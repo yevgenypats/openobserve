@@ -27,7 +27,9 @@
         </div>
       </div>
       <div class="flex q-gutter-sm">
-        <q-icon name="info" style="cursor: pointer" class="q-mt-lg" @click="showViewPanel = true"></q-icon>
+        <q-btn outline padding="sm" class="q-mr-sm" no-caps icon="info_outline" @click="showViewPanel = true">
+          <q-tooltip anchor="center left" self="center right">Query Inspector </q-tooltip>
+        </q-btn>
         <DateTimePickerDashboard v-model="selectedDate" ref="dateTimePickerRef"/>
         <q-btn class="q-ml-md text-bold" outline padding="sm lg" color="red" no-caps :label="t('panel.discard')"
           @click="goBackToDashboardList" />

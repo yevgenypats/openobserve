@@ -23,7 +23,7 @@
           {{ props.data.title }}
         </div>
         <q-space />
-        <q-icon v-if="dependentAdHocVariable" name="info" style="cursor: pointer" @click="showViewPanel = true">
+        <q-icon v-if="dependentAdHocVariable" name="info_outline" style="cursor: pointer" @click="showViewPanel = true">
           <q-tooltip anchor="bottom right" self="top right" max-width="220px">
             Some dynamic variables are not applied because the field is not present in the query's stream. Open Query
             Inspector to see all the details of the variables and queries executed to render this panel
