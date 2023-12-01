@@ -88,7 +88,9 @@
 
                       <div style="flex:1;">
                         <PanelSchemaRenderer @metadata-update="metaDataValue" :key="dashboardPanelData.data.type" :panelSchema="chartData" :selectedTimeObj="dashboardPanelData.meta.dateTime" :variablesData="variablesData" :width="6" @error="handleChartApiError"/>
-                        <MetaDataDialog :metaData="metaData" :data="panelTitle" v-if="metaData" v-model="showViewPanel"></MetaDataDialog>
+                        <q-dialog v-model="showViewPanel">
+                          <MetaDataDialog :metaData="metaData" :data="panelTitle"></MetaDataDialog>
+                        </q-dialog>
                       </div>
                       <DashboardErrorsComponent :errors="errorData" />
                     </div>

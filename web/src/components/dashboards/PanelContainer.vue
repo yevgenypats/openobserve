@@ -58,7 +58,9 @@
     </div>
     <PanelSchemaRenderer :panelSchema="props.data" :selectedTimeObj="props.selectedTimeDate" :width="props.width"
       :height="props.height" :variablesData="props.variablesData" @metadata-update="metaDataValue"></PanelSchemaRenderer>
-    <MetaDataDialog :metaData="metaData" :data="props.data" v-if="metaData" v-model="showViewPanel"></MetaDataDialog>
+      <q-dialog v-model="showViewPanel">
+        <MetaDataDialog :metaData="metaData" :data="props.data"></MetaDataDialog>
+      </q-dialog>
   </div>
 </template>
 
@@ -93,19 +95,24 @@ export default defineComponent({
     };
 
     const dependentAdHocVariable = computed(() => {
+
+      if(!metaData.value) return false
+
       const adhocVariables = props.variablesData.values
         ?.filter((it: any) => it.type === "dynamic_filters")
         ?.map((it: any) => it?.value).flat()
         ?.filter((it: any) => it?.operator && it?.name && it?.value)
-      console.log("adhocVariables==", adhocVariables);
+      console.log(props.data.title, ":: adhocVariables==", adhocVariables);
 
       const metaDataDynamic = metaData.value?.queries?.every((it: any) => {
         const vars = it.variables?.filter((it: any) => it.type === "dynamicVariable")
+        console.log("adhocVariables== vars", vars);
         return vars.length == adhocVariables.length
       });
-      console.log("metaDataDynamic====", metaDataDynamic);
+      console.log(props.data.title, ":: metaDataDynamic====", metaDataDynamic);
       return !metaDataDynamic
     })
+console.log("dependentAdHocVariable", dependentAdHocVariable.value);
 
     //for edit panel
     const onEditPanel = (data: any) => {
