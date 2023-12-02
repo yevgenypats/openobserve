@@ -61,14 +61,12 @@ export default defineComponent({
         VariableQueryValueSelector, VariableAdHocValueSelector
     },
     setup(props: any, { emit }) {
-        console.log("props", props)
         const store = useStore();
         // variables data derived from the variables config list 
         const variablesData: any = reactive({
             isVariablesLoading: false,
             values: []
         });
-        console.log("variablesData", variablesData);
 
         onMounted(() => {
             getVariablesData();
@@ -78,7 +76,6 @@ export default defineComponent({
             getVariablesData();
         });
         watch(() => variablesData, () => {
-            console.log("deep emit", variablesData);
             emitVariablesData();
         }, { deep: true });
 
@@ -105,8 +102,6 @@ export default defineComponent({
                     name: key,
                     value: dynamicVariables.includes(key) ? JSON.parse(decodeURIComponent(props.initialVariableValues[key])) : props.initialVariableValues[key],
                 }))
-                console.log("oldVariableValueeee", oldVariableValue);
-
             }
 
             // continue as we have variables
@@ -209,18 +204,15 @@ export default defineComponent({
                         // break;
                     }
                     case "dynamic_filters": {
-                        console.log("dynamic_filters");
 
                         obj.isLoading = true;  // Set loading state
 
                         return streamService
                             .nameList(store.state.selectedOrganization.identifier, "", true)
                             .then((res) => {
-                                console.log("obj", obj);
 
                                 obj.isLoading = false;  // Reset loading state
 
-                                console.log("res.data.list", res.data.list);
                                 const fieldsObj = {};
 
                                 res.data.list.forEach((item: any) => {
@@ -248,18 +240,14 @@ export default defineComponent({
                                     name: schemaName,
                                     streams: entries,
                                 }));
-                                console.log("object==", fieldsObj);
-                                console.log("objectArray object==", fieldsArray);
                                 obj.options = fieldsArray;
 
                                 let old = oldVariableValue.find((it2: any) => it2.name === it.name);
-                                console.log(old, "adhocValue");
                                 if (old) {
                                     obj.value = old.value.map((it2: any) => ({
                                         ...it2,
                                         streams: fieldsArray.find((it3: any) => it3.name === it2.name)?.streams
                                     }));
-                                    console.log(obj.value, "obj.valueee");
 
                                 } else {
                                     obj.value = [];
@@ -274,7 +262,6 @@ export default defineComponent({
                                 return obj;
                             })
                             .catch((error) => {
-                                console.log(error, "error");
 
                                 obj.isLoading = false;  // Reset loading state
                                 // Handle error

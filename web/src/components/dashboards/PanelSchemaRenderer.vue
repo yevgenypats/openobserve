@@ -114,7 +114,6 @@ export default defineComponent({
     },{ deep: true });
 
     watch(metadata, () => {
-        console.log("metadata", JSON.stringify(metadata.value, null, 2))
         emit("metadata-update", metadata.value);
     });
     

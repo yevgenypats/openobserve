@@ -90,8 +90,6 @@ export default defineComponent({
     const showViewPanel = ref(false);
     const metaDataValue = (metadata: any) => {
       metaData.value = metadata;
-      console.log("metadata panel", metadata);
-
     };
 
     const dependentAdHocVariable = computed(() => {
@@ -102,17 +100,13 @@ export default defineComponent({
         ?.filter((it: any) => it.type === "dynamic_filters")
         ?.map((it: any) => it?.value).flat()
         ?.filter((it: any) => it?.operator && it?.name && it?.value)
-      console.log(props.data.title, ":: adhocVariables==", adhocVariables);
 
       const metaDataDynamic = metaData.value?.queries?.every((it: any) => {
         const vars = it.variables?.filter((it: any) => it.type === "dynamicVariable")
-        console.log("adhocVariables== vars", vars);
         return vars.length == adhocVariables.length
       });
-      console.log(props.data.title, ":: metaDataDynamic====", metaDataDynamic);
       return !metaDataDynamic
     })
-console.log("dependentAdHocVariable", dependentAdHocVariable.value);
 
     //for edit panel
     const onEditPanel = (data: any) => {

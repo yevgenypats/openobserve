@@ -179,7 +179,6 @@ export default defineComponent({
    
     const getDashboardData = async () => {
       const data = JSON.parse(JSON.stringify(await getDashboard(store,route.query.dashboard, route.query.folder ?? "default")))?.variables?.list
-      console.log("data", data);
       
       dashboardVariableData.data = (data || []).map((it:any, index:number) => {
         
