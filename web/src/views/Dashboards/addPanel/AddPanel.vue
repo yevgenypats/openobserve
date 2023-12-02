@@ -89,7 +89,7 @@
                       <div style="flex:1;">
                         <PanelSchemaRenderer @metadata-update="metaDataValue" :key="dashboardPanelData.data.type" :panelSchema="chartData" :selectedTimeObj="dashboardPanelData.meta.dateTime" :variablesData="variablesData" :width="6" @error="handleChartApiError"/>
                         <q-dialog v-model="showViewPanel">
-                          <MetaDataDialog :metaData="metaData" :data="panelTitle"></MetaDataDialog>
+                          <QueryInspector :metaData="metaData" :data="panelTitle"></QueryInspector>
                         </q-dialog>
                       </div>
                       <DashboardErrorsComponent :errors="errorData" />
@@ -158,7 +158,7 @@ import VariablesValueSelector from "../../../components/dashboards/VariablesValu
 import PanelSchemaRenderer from "../../../components/dashboards/PanelSchemaRenderer.vue";
 import { useLoading } from "@/composables/useLoading";
 import _ from "lodash-es";
-import MetaDataDialog from "@/components/dashboards/MetaDataDialog.vue";
+import QueryInspector from "@/components/dashboards/QueryInspector.vue";
 
 export default defineComponent({
   name: "AddPanel",
@@ -175,7 +175,7 @@ export default defineComponent({
     VariablesValueSelector,
     PanelSchemaRenderer,
     DashboardQueryEditor,
-    MetaDataDialog
+    QueryInspector
   },
   setup(props) {
     // This will be used to copy the chart data to the chart renderer component

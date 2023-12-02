@@ -59,7 +59,7 @@
     <PanelSchemaRenderer :panelSchema="props.data" :selectedTimeObj="props.selectedTimeDate" :width="props.width"
       :height="props.height" :variablesData="props.variablesData" @metadata-update="metaDataValue"></PanelSchemaRenderer>
       <q-dialog v-model="showViewPanel">
-        <MetaDataDialog :metaData="metaData" :data="props.data"></MetaDataDialog>
+        <QueryInspector :metaData="metaData" :data="props.data"></QueryInspector>
       </q-dialog>
   </div>
 </template>
@@ -71,7 +71,7 @@ import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 import { addPanel } from "@/utils/commons";
 import { useQuasar } from "quasar";
-import MetaDataDialog from "@/components/dashboards/MetaDataDialog.vue";
+import QueryInspector from "@/components/dashboards/QueryInspector.vue";
 
 export default defineComponent({
   name: "PanelContainer",
@@ -79,7 +79,7 @@ export default defineComponent({
   props: ["data", "selectedTimeDate", "viewOnly", "width", "height", "variablesData", "dashboardId", "metaData"],
   components: {
     PanelSchemaRenderer,
-    MetaDataDialog
+    QueryInspector
   },
   setup(props) {
     const store = useStore();
