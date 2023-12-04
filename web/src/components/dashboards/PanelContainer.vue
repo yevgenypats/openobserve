@@ -92,6 +92,7 @@ export default defineComponent({
       metaData.value = metadata;
     };
 
+    //check if dependent adhoc variable exists
     const dependentAdHocVariable = computed(() => {
 
       if(!metaData.value) return false
@@ -102,8 +103,8 @@ export default defineComponent({
         ?.filter((it: any) => it?.operator && it?.name && it?.value)
 
       const metaDataDynamic = metaData.value?.queries?.every((it: any) => {
-        const vars = it.variables?.filter((it: any) => it.type === "dynamicVariable")
-        return vars.length == adhocVariables.length
+        const vars = it?.variables?.filter((it: any) => it.type === "dynamicVariable")
+        return vars?.length == adhocVariables?.length
       });
       return !metaDataDynamic
     })
