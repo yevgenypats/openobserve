@@ -38,7 +38,7 @@
                     </template>
                 </q-select>
             </div>
-            <div v-if="item.type == 'dynamic_filters'">
+            <div v-else-if="item.type == 'dynamic_filters'">
                 <VariableAdHocValueSelector v-model="item.value" :variableItem="item" />
             </div>
         </div>
@@ -46,7 +46,7 @@
 </template>
 
 <script lang="ts">
-import { onMounted, watch } from 'vue';
+import { getCurrentInstance, onMounted, watch } from 'vue';
 import { defineComponent, reactive } from 'vue';
 import streamService from "../../services/stream";
 import { useStore } from 'vuex';
@@ -61,6 +61,8 @@ export default defineComponent({
         VariableQueryValueSelector, VariableAdHocValueSelector
     },
     setup(props: any, { emit }) {
+
+        const instance = getCurrentInstance()
         const store = useStore();
         // variables data derived from the variables config list 
         const variablesData: any = reactive({
@@ -80,7 +82,8 @@ export default defineComponent({
         }, { deep: true });
 
         const emitVariablesData = () => {
-            emit("variablesData", JSON.parse(JSON.stringify(variablesData)));
+            instance?.proxy?.$forceUpdate();
+            emit("variablesData", variablesData);
         };
 
         const getVariablesData = async () => {
@@ -149,7 +152,7 @@ export default defineComponent({
                                     variablesData.isVariablesLoading = variablesData.values.some((val: { isLoading: any; }) => val.isLoading);
 
                                     // triggers rerendering in the current component
-                                    variablesData.values[index] = JSON.parse(JSON.stringify(obj))
+                                    variablesData.values[index] = obj
 
                                     emitVariablesData();
                                     return obj;
@@ -158,7 +161,7 @@ export default defineComponent({
                                     variablesData.isVariablesLoading = variablesData.values.some((val: { isLoading: any; }) => val.isLoading);
 
                                     // triggers rerendering in the current component
-                                    variablesData.values[index] = JSON.parse(JSON.stringify(obj))
+                                    variablesData.values[index] = obj
 
                                     emitVariablesData();
                                     return obj;
@@ -170,7 +173,7 @@ export default defineComponent({
                                 variablesData.isVariablesLoading = variablesData.values.some((val: { isLoading: any; }) => val.isLoading);
 
                                 // triggers rerendering in the current component
-                                variablesData.values[index] = JSON.parse(JSON.stringify(obj))
+                                variablesData.values[index] = obj
 
                                 emitVariablesData();
                                 return obj;
@@ -256,7 +259,7 @@ export default defineComponent({
                                 variablesData.isVariablesLoading = variablesData.values.some((val: { isLoading: any; }) => val.isLoading);
 
                                 // triggers rerendering in the current component
-                                variablesData.values[index] = JSON.parse(JSON.stringify(obj));
+                                variablesData.values[index] = obj;
 
                                 emitVariablesData();
                                 return obj;
@@ -268,7 +271,7 @@ export default defineComponent({
                                 variablesData.isVariablesLoading = variablesData.values.some((val: { isLoading: any; }) => val.isLoading);
 
                                 // triggers rerendering in the current component
-                                variablesData.values[index] = JSON.parse(JSON.stringify(obj));
+                                variablesData.values[index] = obj
 
                                 emitVariablesData();
                                 return obj;

@@ -92,7 +92,7 @@ export default defineComponent({
     const variablesData = reactive({});
     const variablesDataUpdated = (data: any) => {
       Object.assign(variablesData, data);
-      emit("variablesData", structuredClone(toRaw(variablesData)));
+      emit("variablesData", variablesData);
     };
 
     // save the dashboard value
