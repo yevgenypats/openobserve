@@ -216,7 +216,7 @@ export default defineComponent({
 
                                 obj.isLoading = false;  // Reset loading state
 
-                                const fieldsObj = {};
+                                const fieldsObj: any = {};
 
                                 res.data.list.forEach((item: any) => {
                                     const name = item.name;
@@ -229,7 +229,7 @@ export default defineComponent({
                                             fieldsObj[fieldName] = [];
                                         }
 
-                                        const existingEntry = fieldsObj[fieldName].find((entry) => entry.name === name && entry.stream_type === stream_type);
+                                        const existingEntry = fieldsObj[fieldName].find((entry: any) => entry.name === name && entry.stream_type === stream_type);
 
                                         if (!existingEntry) {
                                             fieldsObj[fieldName].push({
