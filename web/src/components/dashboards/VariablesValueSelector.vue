@@ -82,8 +82,10 @@ export default defineComponent({
         }, { deep: true });
 
         const emitVariablesData = () => {
+            console.log('emit variables data', JSON.stringify(variablesData, null, 2));
+            
             instance?.proxy?.$forceUpdate();
-            emit("variablesData", variablesData);
+            emit("variablesData", JSON.parse(JSON.stringify(variablesData)));
         };
 
         const getVariablesData = async () => {
@@ -91,6 +93,8 @@ export default defineComponent({
             if (!props.variablesConfig?.list || !props.selectedTimeDate?.start_time) {
                 variablesData.values = [];
                 variablesData.isVariablesLoading = false;
+                console.log('no variables or date', props.variablesConfig?.list, props.selectedTimeDate?.start_time);
+                
                 emitVariablesData();
                 return;
             }
@@ -107,6 +111,9 @@ export default defineComponent({
                 }))
             }
 
+            console.log('initializing old variables', oldVariableValue);
+            
+
             // continue as we have variables
 
             // reset the values
@@ -115,7 +122,7 @@ export default defineComponent({
 
             const promise = props.variablesConfig?.list?.map((it: any, index: any) => {
 
-                const obj: any = { name: it.name, label: it.label, type: it.type, value: "", isLoading: it.type == "query_values" ? true : false };
+                const obj: any = { name: it.name, label: it.label, type: it.type, value: it.type == 'dynamic_filters' ? [] : "", isLoading: ["query_values", "dynamic_filters"].includes(it.type)  ? true : false };
                 variablesData.values.push(obj);
                 variablesData.isVariablesLoading = true;
 
@@ -251,8 +258,11 @@ export default defineComponent({
                                         ...it2,
                                         streams: fieldsArray.find((it3: any) => it3.name === it2.name)?.streams
                                     }));
+                                console.log("obj inside if", old, obj.value);
 
                                 } else {
+                                    console.log("obj inside else", obj);
+                                    
                                     obj.value = [];
                                 }
 
@@ -260,7 +270,7 @@ export default defineComponent({
 
                                 // triggers rerendering in the current component
                                 variablesData.values[index] = obj;
-
+                                console.log("obj", obj);
                                 emitVariablesData();
                                 return obj;
                             })
@@ -283,7 +293,7 @@ export default defineComponent({
                 }
             });
 
-            variablesData.isVariablesLoading = false;
+            variablesData.isVariablesLoading = variablesData.values.some((val: { isLoading: any; }) => val.isLoading);;
             emitVariablesData();
 
             Promise.all(promise)

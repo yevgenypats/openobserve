@@ -134,6 +134,7 @@ export default defineComponent({
         initialVariableValues[newKey] = route.query[key];
       }
     });
+    console.log("initialVariableValues:", initialVariableValues);
     // ======= [END] default variable values
 
     onActivated(async () => {
