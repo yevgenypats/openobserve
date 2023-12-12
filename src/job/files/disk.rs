@@ -63,7 +63,7 @@ pub async fn run() -> Result<(), anyhow::Error> {
             break;
         }
         interval.tick().await;
-        if let Err(e) = move_files_to_storage().await {
+        if let Err(e) = move_files_to_storage_v1().await {
             log::error!("Error moving disk files to remote: {}", e);
         }
 
@@ -81,7 +81,6 @@ pub async fn move_files_to_storage() -> Result<(), anyhow::Error> {
     let wal_dir = Path::new(&CONFIG.common.data_wal_dir)
         .canonicalize()
         .unwrap();
-
     let pattern = format!("{}files/", &CONFIG.common.data_wal_dir);
     let files = scan_files(&pattern);
 
@@ -410,6 +409,390 @@ async fn upload_file(
         }
     }
 }
+
+// upload compressed files to storage & delete moved files from local
+pub async fn move_files_to_storage_v1() -> Result<(), anyhow::Error> {
+    let wal_dir = Path::new(&CONFIG.common.data_wal_dir)
+        .canonicalize()
+        .unwrap();
+
+    let mut file_group: HashMap<String, StreamData> = HashMap::new();
+    let pattern = format!("{}files/", &CONFIG.common.data_wal_dir);
+    let files = scan_files(&pattern);
+
+    // use multiple threads to upload files
+    let mut tasks = Vec::new();
+    let semaphore = std::sync::Arc::new(Semaphore::new(CONFIG.limit.file_move_thread_num));
+    for file in files {
+        let local_file = file.to_owned();
+        let local_path = Path::new(&file).canonicalize().unwrap();
+        let file_path = local_path
+            .strip_prefix(&wal_dir)
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .replace('\\', "/");
+        let columns = file_path.splitn(5, '/').collect::<Vec<&str>>();
+
+        // eg: files/default/logs/olympics/0/2023/08/21/08/8b8a5451bbe1c44b/
+        // 7099303408192061440f3XQ2p.json eg: files/default/traces/default/0/
+        // 2023/09/04/05/default/service_name=ingester/7104328279989026816guOA4t.json
+        // let _ = columns[0].to_string(); // files/
+        let org_id = columns[1].to_string();
+        let stream_type: StreamType = StreamType::from(columns[2]);
+        let stream_name = columns[3].to_string();
+        let mut file_name = columns[4].to_string();
+
+        if stream_type.eq(&StreamType::Metrics) && file_name.ends_with(".json") {
+            continue;
+        }
+
+        // Hack: compatible for <= 0.5.1
+        if !file_name.contains('/') && file_name.contains('_') {
+            file_name = file_name.replace('_', "/");
+        }
+
+        // for file name :
+        // "/3/2023/12/11/05/83609de1086ca1a8/sport=Aquatics/7139845528115871744BwPvE7.
+        // arrow"; grouping needs to be irrespective if thread num & file num
+        let grp_condition = file_name
+            .splitn(2, '/')
+            .nth(1)
+            .unwrap()
+            .rsplitn(2, '/')
+            .nth(1)
+            .unwrap();
+
+        // check the file is using for write
+        if wal::check_in_use(
+            StreamParams::new(&org_id, &stream_name, stream_type),
+            &file_name,
+        )
+        .await
+        {
+            // println!("file is using for write, skip, {}", file_name);
+            continue;
+        }
+        log::info!("[JOB] convert disk file: {}", file);
+
+        // check if we are allowed to ingest or just delete the file
+        if db::compact::retention::is_deleting_stream(&org_id, &stream_name, stream_type, None) {
+            log::info!(
+                "[JOB] the stream [{}/{}/{}] is deleting, just delete file: {}",
+                &org_id,
+                stream_type,
+                &stream_name,
+                file
+            );
+            if let Err(e) = tokio::fs::remove_file(&local_file).await {
+                log::error!(
+                    "[JOB] Failed to remove disk file from disk: {}, {}",
+                    local_file,
+                    e
+                );
+            }
+            continue;
+        }
+        if file_name.contains(grp_condition) {
+            if file_group.contains_key(grp_condition) {
+                file_group
+                    .get_mut(grp_condition)
+                    .unwrap()
+                    .files
+                    .push(local_file.clone());
+            } else {
+                file_group.insert(
+                    grp_condition.to_string(),
+                    StreamData {
+                        files: vec![local_file.clone()],
+                        stream_params: StreamParams::new(&org_id, &stream_name, stream_type),
+                    },
+                );
+            };
+        };
+    }
+    println!("total group of files are: {:?}", file_group.len());
+
+    for (_, stream_data) in file_group {
+        let org_id = stream_data.stream_params.org_id.clone();
+        let stream_type: StreamType = stream_data.stream_params.stream_type;
+        let stream_name = stream_data.stream_params.stream_name;
+        let files = stream_data.files.clone();
+
+        let permit = semaphore.clone().acquire_owned().await.unwrap();
+        let task: task::JoinHandle<Result<(), anyhow::Error>> = task::spawn(async move {
+            let ret = upload_files(&org_id, &stream_name, stream_type, stream_data.files).await;
+            if let Err(e) = ret {
+                log::error!(
+                    "[JOB] Error while uploading disk file {:?} to storage {}",
+                    files,
+                    e
+                );
+                drop(permit);
+                return Ok(());
+            }
+
+            let (key, meta, _stream_type) = ret.unwrap();
+            let ret = db::file_list::local::set(&key, Some(meta.clone()), false).await;
+            if let Err(e) = ret {
+                log::error!(
+                    "[JOB] Failed write disk file meta: {}, error: {}",
+                    key,
+                    e.to_string()
+                );
+                drop(permit);
+                return Ok(());
+            }
+
+            for file_path in files {
+                let local_file = file_path.to_owned();
+                // check if allowed to delete the file
+                loop {
+                    if wal::lock_files_exists(&file_path).await {
+                        log::info!(
+                            "[JOB] the file is still in use, waiting for a few ms: {}",
+                            file_path
+                        );
+                        time::sleep(time::Duration::from_millis(100)).await;
+                    } else {
+                        break;
+                    }
+                }
+
+                let ret = tokio::fs::remove_file(&local_file).await;
+                if let Err(e) = ret {
+                    log::error!(
+                        "[JOB] Failed to remove disk file from disk: {}, {}",
+                        local_file,
+                        e.to_string()
+                    );
+                    drop(permit);
+                    return Ok(());
+                }
+            }
+            // metrics
+            let columns = key.split('/').collect::<Vec<&str>>();
+            if columns[0] == "files" {
+                metrics::INGEST_WAL_USED_BYTES
+                    .with_label_values(&[columns[1], columns[3], columns[2]])
+                    .sub(meta.original_size);
+                report_compression_stats(meta.into(), &org_id, &stream_name, stream_type).await;
+            }
+
+            drop(permit);
+            Ok(())
+        });
+        tasks.push(task);
+    }
+
+    for task in tasks {
+        if let Err(e) = task.await {
+            log::error!("[JOB] Error while uploading disk file to storage {}", e);
+        };
+    }
+
+    Ok(())
+}
+
+async fn upload_files(
+    org_id: &str,
+    stream_name: &str,
+    stream_type: StreamType,
+    files: Vec<String>,
+) -> Result<(String, FileMeta, StreamType), anyhow::Error> {
+    println!("writing files together: {:?}", files);
+    let mut arrow_schema = Arc::new(Schema::empty());
+    let mut batches = vec![];
+    let mut final_file_size = 0;
+    // let last_file_name = "";
+    for file_name in &files {
+        let local_file = file_name.to_owned();
+        // let local_path = Path::new(&file_name).canonicalize().unwrap();
+        let mut file = fs::File::open(local_file).unwrap();
+        let file_meta = file.metadata().unwrap();
+        let file_size = file_meta.len();
+
+        log::info!("[JOB] File upload begin: disk: {}", &file_name);
+        if file_size == 0 {
+            if let Err(e) = tokio::fs::remove_file(file_name).await {
+                log::error!(
+                    "[JOB] Failed to remove disk file from disk: {}, {}",
+                    file_name,
+                    e
+                );
+            }
+            return Err(anyhow::anyhow!("file is empty: {}", file_name));
+        }
+        final_file_size += file_size;
+
+        // metrics
+        metrics::INGEST_WAL_READ_BYTES
+            .with_label_values(&[org_id, stream_name, stream_type.to_string().as_str()])
+            .inc_by(file_size);
+
+        let is_arrow = file_name.ends_with(FILE_EXT_ARROW);
+
+        if !is_arrow {
+            let mut res_records: Vec<json::Value> = vec![];
+            let mut schema_reader = BufReader::new(&file);
+            let inferred_schema =
+                match infer_json_schema_from_seekable(&mut schema_reader, None, stream_type) {
+                    Ok(inferred_schema) => {
+                        drop(schema_reader);
+                        inferred_schema
+                    }
+                    Err(err) => {
+                        // File has some corrupt json data....ignore such data & move rest of the
+                        // records
+                        log::error!(
+                            "[JOB] Failed to infer schema from file: {}, error: {}",
+                            file_name,
+                            err.to_string()
+                        );
+
+                        drop(schema_reader);
+                        file.seek(SeekFrom::Start(0)).unwrap();
+                        let mut json_reader = BufReader::new(&file);
+                        let value_reader =
+                            arrow::json::reader::ValueIter::new(&mut json_reader, None);
+                        for value in value_reader {
+                            match value {
+                                Ok(val) => {
+                                    res_records.push(val);
+                                }
+                                Err(err) => {
+                                    log::error!(
+                                        "[JOB] Failed to parse record: error: {}",
+                                        err.to_string()
+                                    )
+                                }
+                            }
+                        }
+                        if res_records.is_empty() {
+                            return Err(anyhow::anyhow!(
+                                "[JOB] File has corrupt json data: {}",
+                                file_name
+                            ));
+                        }
+                        let value_iter = res_records.iter().map(Ok);
+                        infer_json_schema_from_iterator(value_iter, stream_type).unwrap()
+                    }
+                };
+            arrow_schema = Arc::new(inferred_schema);
+
+            if res_records.is_empty() {
+                file.seek(SeekFrom::Start(0)).unwrap();
+                let json_reader = BufReader::new(&file);
+                let json = ReaderBuilder::new(arrow_schema.clone())
+                    .build(json_reader)
+                    .unwrap();
+                for batch in json {
+                    match batch {
+                        Ok(batch) => batches.push(batch),
+                        Err(err) => {
+                            tokio::fs::remove_file(file_name).await?;
+                            return Err(anyhow::anyhow!(
+                                "[JOB] File has corrupt data: {}, err: {}",
+                                file_name,
+                                err
+                            ));
+                        }
+                    }
+                }
+            } else {
+                let mut json = vec![];
+                let mut decoder = ReaderBuilder::new(arrow_schema.clone()).build_decoder()?;
+                for value in res_records {
+                    decoder
+                        .decode(json::to_string(&value).unwrap().as_bytes())
+                        .unwrap();
+                    json.push(decoder.flush()?.unwrap());
+                }
+                for batch in json {
+                    batches.push(batch);
+                }
+            };
+        } else {
+            let stream_reader = StreamReader::try_new(&file, None)?;
+            for read_result in stream_reader {
+                let record_batch = read_result?;
+                batches.push(record_batch);
+            }
+            let schema = if let Some(first_batch) = batches.first() {
+                first_batch.schema()
+            } else {
+                return Err(anyhow::anyhow!("No record batches found".to_string(),));
+            };
+            arrow_schema = schema
+        }
+    }
+    let last_file_name = files.last().unwrap();
+    // write metadata
+    let mut file_meta = FileMeta {
+        min_ts: 0,
+        max_ts: 0,
+        records: 0,
+        original_size: final_file_size as i64,
+        compressed_size: 0,
+    };
+    populate_file_meta(arrow_schema.clone(), vec![batches.to_vec()], &mut file_meta).await?;
+
+    // get bloom filter setting
+    let db_schema = match db::schema::get(org_id, stream_name, stream_type).await {
+        Ok(schema) => schema,
+        Err(_) => Schema::empty(),
+    };
+    let bloom_filter_fields = get_stream_setting_bloom_filter_fields(&db_schema).unwrap();
+
+    // write parquet file
+    let mut buf_parquet = Vec::new();
+    let mut writer = new_parquet_writer(
+        &mut buf_parquet,
+        &arrow_schema,
+        &bloom_filter_fields,
+        &file_meta,
+    );
+    for batch in batches {
+        writer.write(&batch)?;
+    }
+    writer.close()?;
+    file_meta.compressed_size = buf_parquet.len() as i64;
+
+    schema_evolution(
+        org_id,
+        stream_name,
+        stream_type,
+        arrow_schema,
+        file_meta.min_ts,
+    )
+    .await;
+
+    let new_file_name =
+        super::generate_storage_file_name(org_id, stream_type, stream_name, last_file_name);
+    // drop(file);
+    let file_name = new_file_name.to_owned();
+    match task::spawn_blocking(move || async move {
+        storage::put(&new_file_name, bytes::Bytes::from(buf_parquet)).await
+    })
+    .await
+    {
+        Ok(output) => match output.await {
+            Ok(_) => {
+                log::info!("[JOB] disk file upload succeeded: {}", file_name);
+                Ok((file_name, file_meta, stream_type))
+            }
+            Err(err) => {
+                log::error!("[JOB] disk file upload error: {:?}", err);
+                Err(anyhow::anyhow!(err))
+            }
+        },
+        Err(err) => {
+            log::error!("[JOB] disk file upload error: {:?}", err);
+            Err(anyhow::anyhow!(err))
+        }
+    }
+}
+
 async fn handle_metrics(
     org_id: &str,
     stream_type: StreamType,
@@ -681,4 +1064,10 @@ pub async fn metrics_json_to_arrow() -> Result<(), anyhow::Error> {
         };
     }
     Ok(())
+}
+
+#[derive(Clone, Debug)]
+struct StreamData {
+    pub stream_params: StreamParams,
+    pub files: Vec<String>,
 }
