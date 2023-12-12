@@ -765,6 +765,15 @@ console.log("inside watch variablesData");
           return true;
         }
 
+        // if no adhoc variables used, then allow to run the query 
+          if (
+            !variablesData.value?.values
+              ?.filter((it: any) => it.type === "dynamic_filters")
+              ?.map((it: any) => it?.value)
+              .flat().length
+          ) {
+            return true;
+          }
 
         if (!adHocVariables.length) {
           console.log(
