@@ -193,14 +193,15 @@ export const usePanelDataLoader = (
   //   JSON.parse(JSON.stringify(variablesData.value.values))
   // );
   
-  let currentAdHocVariablesData = variablesData.value?.values
-    ? JSON.parse(JSON.stringify(variablesData.value?.values
-          ?.filter((it: any) => it.type === "dynamic_filters")
-          ?.map((it: any) => it?.value)
-          .flat()
-          ?.filter((it: any) => it?.operator && it?.name && it?.value)
-          ))
-    : []
+  // let currentAdHocVariablesData = variablesData.value?.values
+  //   ? JSON.parse(JSON.stringify(variablesData.value?.values
+  //         ?.filter((it: any) => it.type === "dynamic_filters")
+  //         ?.map((it: any) => it?.value)
+  //         .flat()
+  //         ?.filter((it: any) => it?.operator && it?.name && it?.value)
+  //         ))
+  //   : []
+  let currentAdHocVariablesData: any = null;
   console.log("currentAdHocVariablesData", currentAdHocVariablesData);
   
   const store = useStore();
@@ -751,11 +752,11 @@ console.log("inside watch variablesData");
         console.log("adHocVariables shouldITriggerTheQueryForAdHocVariables", adHocVariables);
         console.log(
           "adHocVariables shouldITriggerTheQueryForAdHocVariables : currentAdHocVariablesData.length",
-          currentAdHocVariablesData.length
+          currentAdHocVariablesData?.length
         );
         
         // if number of adHocVariables have changed, fire the query
-        if (adHocVariables.length !== currentAdHocVariablesData.length) {
+        if (!currentAdHocVariablesData || adHocVariables.length !== currentAdHocVariablesData?.length) {
           currentAdHocVariablesData = JSON.parse(
             JSON.stringify(adHocVariables)
           );
@@ -768,14 +769,14 @@ console.log("inside watch variablesData");
         }
 
         // if no adhoc variables used, then allow to run the query 
-          if (
-            !variablesData.value?.values
-              ?.filter((it: any) => it.type === "dynamic_filters")
-              ?.map((it: any) => it?.value)
-              .flat().length
-          ) {
-            return true;
-          }
+          // if (
+          //   !variablesData.value?.values
+          //     ?.filter((it: any) => it.type === "dynamic_filters")
+          //     ?.map((it: any) => it?.value)
+          //     .flat().length
+          // ) {
+          //   return true;
+          // }
 
         if (!adHocVariables.length) {
           console.log(
@@ -788,7 +789,7 @@ console.log("inside watch variablesData");
 
         // 2. compare with the previously saved variable values, the variables data is an array of objects with name and value
         const isAllValuesSame = adHocVariables.every((it: any) => {
-          const oldValue = currentAdHocVariablesData.find(
+          const oldValue = currentAdHocVariablesData?.find(
             (it2: any) => it2.name == it.name
           );
           return it.value == oldValue?.value && oldValue?.value != "";
