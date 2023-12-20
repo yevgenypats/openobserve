@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       :initialVariableValues="initialVariableValues"
       @variablesData="variablesDataUpdated"
     />
+    <TabList />
     <slot name="before_panels" />
     <div class="displayDiv">
       <grid-layout
@@ -107,6 +108,7 @@ import { updateDashboard } from "../../utils/commons";
 import NoPanel from "../../components/shared/grid/NoPanel.vue";
 import VariablesValueSelector from "../../components/dashboards/VariablesValueSelector.vue";
 import ViewPanel from "@/components/dashboards/viewPanel/ViewPanel.vue";
+import TabList from "@/components/dashboards/tabs/TabList.vue";
 
 export default defineComponent({
   name: "RenderDashboardCharts",
@@ -125,6 +127,7 @@ export default defineComponent({
     NoPanel,
     VariablesValueSelector,
     ViewPanel,
+    TabList,
   },
   setup(props: any, { emit }) {
     const { t } = useI18n();
