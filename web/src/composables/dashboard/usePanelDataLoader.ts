@@ -32,7 +32,7 @@ export const usePanelDataLoader = (
   chartPanelRef: any
 ) => {
   const log = (...args: any[]) => {
-    if (false) {
+    if (true) {
       console.log(panelSchema?.value?.title + ": ", ...args);
     }
   };
