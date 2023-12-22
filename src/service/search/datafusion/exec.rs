@@ -1202,7 +1202,14 @@ fn apply_query_fn(
                 decoder
                     .decode(json::to_string(&value).unwrap().as_bytes())
                     .unwrap();
-                resp.push(decoder.flush()?.unwrap());
+                match decoder.flush() {
+                    Ok(Some(batch)) => resp.push(batch),
+                    Ok(None) => (),
+                    Err(err) => {
+                        log::info!("Error applying VRL function , hence skipping: {}", err);
+                    }
+                }
+                // resp.push(decoder.flush()?.unwrap());
             }
             Ok(resp)
         }
